@@ -3,7 +3,9 @@
 #include <sstream>
 
 #include "rclcpp/rclcpp.hpp"
-#include "thread_configurator.hpp"
+#include "ros2_thread_configurator.hpp"
+
+namespace ros2_thread_configurator {
 
 std::string create_callback_group_id(const rclcpp::CallbackGroup::SharedPtr &group, const rclcpp::Node::SharedPtr &node) {
   std::stringstream ss;
@@ -44,3 +46,4 @@ std::string create_callback_group_id(const rclcpp::CallbackGroup::SharedPtr &gro
   return ret;
 }
 
+} // namespace ros2_thread_configurator
