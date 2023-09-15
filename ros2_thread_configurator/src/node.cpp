@@ -1,5 +1,7 @@
 #include <memory>
+#include <string>
 
+#include "yaml-cpp/yaml.h"
 #include "rclcpp/rclcpp.hpp"
 
 #include "thread_config_msgs/msg/callback_group_info.hpp"
@@ -10,7 +12,7 @@ class ThreadConfiguratorNode : public rclcpp::Node {
 public:
   ThreadConfiguratorNode() : Node("thread_configurator_node") {
     subscription_ = this->create_subscription<thread_config_msgs::msg::CallbackGroupInfo>(
-      "/ros2_thread_configurator/callback_group_info", 10, std::bind(&ThreadConfiguratorNode::topic_callback, this, _1));
+      "/ros2_thread_configurator/callback_group_info", 100, std::bind(&ThreadConfiguratorNode::topic_callback, this, _1));
   }
 
 private:
@@ -24,6 +26,30 @@ private:
 int main(int argc, char * argv[])
 {
   rclcpp::init(argc, argv);
+
+  bool next = false;
+  std::string filename;
+
+  std::vector<std::string> args = rclcpp::remove_ros_arguments(argc, argv);
+
+  for (auto &arg : args) {
+    if (next) {
+      filename = arg;
+      break;
+    }
+
+    if (arg == std::string("--config-file")) next = true;
+  }
+
+  YAML::Node data;
+
+  try {
+    data = YAML::LoadFile(filename);
+    std::cout << data << std::endl;
+  } catch (const std::exception &e) {
+    std::cerr << "Error reading the YAML file: " << e.what() << std::endl;
+  }
+
   rclcpp::spin(std::make_shared<ThreadConfiguratorNode>());
   rclcpp::shutdown();
   return 0;

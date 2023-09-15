@@ -9,7 +9,8 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 
-find_package(thread_config_msgs)
+find_package(thread_config_msgs REQUIRED)
+find_package(yaml-cpp REQUIRED)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -24,6 +25,7 @@ endif()
 
 add_executable(thread_configurator_node src/node.cpp)
 ament_target_dependencies(thread_configurator_node rclcpp thread_config_msgs)
+target_link_libraries(thread_configurator_node yaml-cpp)
 
 add_library(thread_configurator SHARED src/util.cpp)
 ament_target_dependencies(thread_configurator rclcpp thread_config_msgs)
