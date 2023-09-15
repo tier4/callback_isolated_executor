@@ -9,6 +9,8 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 
+find_package(thread_config_msgs)
+
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   # the following line skips the linter which checks for copyrights
@@ -21,7 +23,7 @@ if(BUILD_TESTING)
 endif()
 
 add_library(thread_configurator SHARED src/util.cpp)
-ament_target_dependencies(thread_configurator rclcpp)
+ament_target_dependencies(thread_configurator rclcpp thread_config_msgs)
 
 target_include_directories(thread_configurator PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>

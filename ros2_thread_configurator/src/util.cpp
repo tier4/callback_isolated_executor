@@ -1,8 +1,12 @@
+#include <chrono>
 #include <functional>
 #include <string>
 #include <sstream>
+#include <memory>
 
 #include "rclcpp/rclcpp.hpp"
+#include "thread_config_msgs/msg/callback_group_info.hpp"
+
 #include "ros2_thread_configurator.hpp"
 
 namespace ros2_thread_configurator {
@@ -44,6 +48,23 @@ std::string create_callback_group_id(const rclcpp::CallbackGroup::SharedPtr &gro
   ret.pop_back();
 
   return ret;
+}
+
+rclcpp::Publisher<thread_config_msgs::msg::CallbackGroupInfo>::SharedPtr create_client_publisher() {
+  auto node = std::make_shared<rclcpp::Node>("client_node", "/ros2_thread_configurator");
+  auto publisher = node->create_publisher<thread_config_msgs::msg::CallbackGroupInfo>("/ros2_thread_configurator/callback_group_info", 10);
+  return publisher;
+}
+
+void publish_callback_group_info(const rclcpp::Publisher<thread_config_msgs::msg::CallbackGroupInfo>::SharedPtr &publisher,
+    int64_t tid, const std::string &callback_group_id) {
+  auto message = std::make_shared<thread_config_msgs::msg::CallbackGroupInfo>();
+
+  message->thread_id = tid;
+  message->callback_group_id = callback_group_id;
+
+  publisher->publish(*message);
+  rclcpp::sleep_for(std::chrono::milliseconds(500));
 }
 
 } // namespace ros2_thread_configurator
