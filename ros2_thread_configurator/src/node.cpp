@@ -9,8 +9,33 @@
 using std::placeholders::_1;
 
 class ThreadConfiguratorNode : public rclcpp::Node {
+  struct CallbackGroupConfig {
+    std::string callback_group_id;
+    int64_t thread_id = -1;
+    std::vector<int> affinity;
+    std::string policy;
+    int priority;
+    bool applied = false;
+  };
+
 public:
-  ThreadConfiguratorNode() : Node("thread_configurator_node") {
+  ThreadConfiguratorNode(const YAML::Node &yaml) : Node("thread_configurator_node"), unapplied_num_(0) {
+    {
+      YAML::Node callback_groups = yaml["callback_groups"];
+      unapplied_num_ = callback_groups.size();
+      callback_group_configs_.resize(callback_groups.size());
+
+      for (size_t i = 0; i < callback_groups.size(); i++) {
+        const auto &callback_group = callback_groups[i];
+        auto &config = callback_group_configs_[i];
+
+        config.callback_group_id = callback_group["id"].as<std::string>();
+        for (auto &cpu : callback_group["affinity"]) config.affinity.push_back(cpu.as<int>());
+        config.policy = callback_group["policy"].as<std::string>();
+        config.priority = callback_group["priority"].as<int>();
+      }
+    }
+
     subscription_ = this->create_subscription<thread_config_msgs::msg::CallbackGroupInfo>(
       "/ros2_thread_configurator/callback_group_info", 100, std::bind(&ThreadConfiguratorNode::topic_callback, this, _1));
   }
@@ -21,6 +46,9 @@ private:
   }
 
   rclcpp::Subscription<thread_config_msgs::msg::CallbackGroupInfo>::SharedPtr subscription_;
+
+  std::vector<CallbackGroupConfig> callback_group_configs_;
+  int unapplied_num_;
 };
 
 int main(int argc, char * argv[])
@@ -41,16 +69,16 @@ int main(int argc, char * argv[])
     if (arg == std::string("--config-file")) next = true;
   }
 
-  YAML::Node data;
+  YAML::Node config;
 
   try {
-    data = YAML::LoadFile(filename);
-    std::cout << data << std::endl;
+    config = YAML::LoadFile(filename);
+    std::cout << config << std::endl;
   } catch (const std::exception &e) {
     std::cerr << "Error reading the YAML file: " << e.what() << std::endl;
   }
 
-  rclcpp::spin(std::make_shared<ThreadConfiguratorNode>());
+  rclcpp::spin(std::make_shared<ThreadConfiguratorNode>(config));
   rclcpp::shutdown();
   return 0;
 }
