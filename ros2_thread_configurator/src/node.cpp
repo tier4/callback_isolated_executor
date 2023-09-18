@@ -1,5 +1,6 @@
 #include <memory>
 #include <string>
+#include <unordered_map>
 
 #include "yaml-cpp/yaml.h"
 #include "rclcpp/rclcpp.hpp"
@@ -33,6 +34,8 @@ public:
         for (auto &cpu : callback_group["affinity"]) config.affinity.push_back(cpu.as<int>());
         config.policy = callback_group["policy"].as<std::string>();
         config.priority = callback_group["priority"].as<int>();
+
+        id_to_callback_group_config_[config.callback_group_id] = &config;
       }
     }
 
@@ -41,13 +44,43 @@ public:
   }
 
 private:
-  void topic_callback(const thread_config_msgs::msg::CallbackGroupInfo::SharedPtr msg) const {
-    RCLCPP_INFO(this->get_logger(), "tid=%ld | %s", msg->thread_id, msg->callback_group_id.c_str());
+  bool issue_syscalls(const CallbackGroupConfig &config) const {
+    (void) config;
+    // config.affinity
+    // config.policy
+    // config.priority
+    return true;
+  }
+
+  void topic_callback(const thread_config_msgs::msg::CallbackGroupInfo::SharedPtr msg) {
+    RCLCPP_INFO(this->get_logger(), "Received CallbackGroupInfo: tid=%ld | %s", msg->thread_id, msg->callback_group_id.c_str());
+
+    auto it = id_to_callback_group_config_.find(msg->callback_group_id);
+    if (it == id_to_callback_group_config_.end()) {
+      RCLCPP_WARN(this->get_logger(), "A config entry with the specified callback group id is not found (id=%s, tid=%ld)",
+          msg->callback_group_id.c_str(), msg->thread_id);
+      return;
+    }
+
+    CallbackGroupConfig *config = it->second;
+    if (config->applied) {
+      RCLCPP_WARN(this->get_logger(), "This callback group is already configured. skip (id=%s)", msg->callback_group_id.c_str());
+      return;
+    }
+
+    config->thread_id = msg->thread_id;
+    bool success = issue_syscalls(*config);
+
+    if (success && !config->applied) {
+      config->applied = true;
+      unapplied_num_--;
+    }
   }
 
   rclcpp::Subscription<thread_config_msgs::msg::CallbackGroupInfo>::SharedPtr subscription_;
 
   std::vector<CallbackGroupConfig> callback_group_configs_;
+  std::unordered_map<std::string, CallbackGroupConfig*> id_to_callback_group_config_;
   int unapplied_num_;
 };
 
