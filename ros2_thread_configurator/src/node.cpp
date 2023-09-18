@@ -43,6 +43,10 @@ public:
       "/ros2_thread_configurator/callback_group_info", 100, std::bind(&ThreadConfiguratorNode::topic_callback, this, _1));
   }
 
+  bool all_applied() {
+    return unapplied_num_ == 0;
+  }
+
 private:
   bool issue_syscalls(const CallbackGroupConfig &config) const {
     (void) config;
@@ -111,7 +115,17 @@ int main(int argc, char * argv[])
     std::cerr << "Error reading the YAML file: " << e.what() << std::endl;
   }
 
-  rclcpp::spin(std::make_shared<ThreadConfiguratorNode>(config));
+  auto node = std::make_shared<ThreadConfiguratorNode>(config);
+  auto executor = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
+
+  executor->add_node(node);
+
+  while (rclcpp::ok() && !node->all_applied()) {
+    executor->spin_once();
+  }
+
+  RCLCPP_INFO(node->get_logger(), "Success: All of the configurations are applied. shutting down...");
+
   rclcpp::shutdown();
   return 0;
 }
