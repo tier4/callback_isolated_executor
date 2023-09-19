@@ -23,7 +23,7 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 
-add_executable(thread_configurator_node src/main.cpp src/thread_configurator_node.cpp)
+add_executable(thread_configurator_node src/main.cpp src/thread_configurator_node.cpp src/prerun_node.cpp)
 ament_target_dependencies(thread_configurator_node rclcpp thread_config_msgs)
 target_link_libraries(thread_configurator_node yaml-cpp)
 

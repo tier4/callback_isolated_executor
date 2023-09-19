@@ -4,6 +4,7 @@
 #include "yaml-cpp/yaml.h"
 #include "rclcpp/rclcpp.hpp"
 
+#include "prerun_node.hpp"
 #include "thread_configurator_node.hpp"
 
 static void spin_thread_configurator_node(const std::string &config_filename) {
@@ -32,6 +33,12 @@ static void spin_thread_configurator_node(const std::string &config_filename) {
 
 static void spin_prerun_node() {
   std::cout << "prerun mode" << std::endl;
+
+  auto node = std::make_shared<PrerunNode>();
+  auto executor = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
+
+  executor->add_node(node);
+  executor->spin();
 }
 
 int main(int argc, char * argv[])
