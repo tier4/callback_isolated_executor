@@ -140,28 +140,11 @@ private:
   int unapplied_num_;
 };
 
-int main(int argc, char * argv[])
-{
-  rclcpp::init(argc, argv);
-
-  bool next = false;
-  std::string filename;
-
-  std::vector<std::string> args = rclcpp::remove_ros_arguments(argc, argv);
-
-  for (auto &arg : args) {
-    if (next) {
-      filename = arg;
-      break;
-    }
-
-    if (arg == std::string("--config-file")) next = true;
-  }
-
+static void spin_thread_configurator_node(const std::string &config_filename) {
   YAML::Node config;
 
   try {
-    config = YAML::LoadFile(filename);
+    config = YAML::LoadFile(config_filename);
     std::cout << config << std::endl;
   } catch (const std::exception &e) {
     std::cerr << "Error reading the YAML file: " << e.what() << std::endl;
@@ -178,6 +161,39 @@ int main(int argc, char * argv[])
 
   if (node->all_applied()) {
     RCLCPP_INFO(node->get_logger(), "Success: All of the configurations are applied. shutting down...");
+  }
+}
+
+static void spin_prerun_node() {
+  std::cout << "prerun mode" << std::endl;
+}
+
+int main(int argc, char * argv[])
+{
+  rclcpp::init(argc, argv);
+  std::vector<std::string> args = rclcpp::remove_ros_arguments(argc, argv);
+
+  bool prerun_mode = false;
+  for (auto &arg : args) if (arg == "--prerun") {
+    prerun_mode = true;
+  }
+
+  if (prerun_mode) {
+    spin_prerun_node();
+  } else {
+    bool next = false;
+    std::string filename;
+
+    for (auto &arg : args) {
+      if (next) {
+        filename = arg;
+        break;
+      }
+
+      if (arg == std::string("--config-file")) next = true;
+    }
+
+    spin_thread_configurator_node(filename);
   }
 
   rclcpp::shutdown();
