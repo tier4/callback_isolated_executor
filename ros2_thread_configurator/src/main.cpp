@@ -1,3 +1,4 @@
+#include <filesystem>
 #include <memory>
 #include <string>
 
@@ -39,6 +40,8 @@ static void spin_prerun_node() {
 
   executor->add_node(node);
   executor->spin();
+
+  node->dump_yaml_config(std::filesystem::current_path());
 }
 
 int main(int argc, char * argv[])
