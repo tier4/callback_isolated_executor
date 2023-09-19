@@ -23,9 +23,13 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 
-add_executable(thread_configurator_node src/node.cpp)
+add_executable(thread_configurator_node src/node.cpp src/thread_configurator_node.cpp)
 ament_target_dependencies(thread_configurator_node rclcpp thread_config_msgs)
 target_link_libraries(thread_configurator_node yaml-cpp)
+
+target_include_directories(thread_configurator_node PRIVATE
+  ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
 
 add_library(thread_configurator SHARED src/util.cpp)
 ament_target_dependencies(thread_configurator rclcpp thread_config_msgs)
