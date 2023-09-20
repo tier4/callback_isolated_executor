@@ -11,7 +11,7 @@
 
 namespace ros2_thread_configurator {
 
-std::string create_callback_group_id(const rclcpp::CallbackGroup::SharedPtr &group, const rclcpp::Node::SharedPtr &node) {
+std::string create_callback_group_id(rclcpp::CallbackGroup::SharedPtr group, rclcpp::node_interfaces::NodeBaseInterface::SharedPtr node) {
   std::stringstream ss;
 
   ss << node->get_namespace() << "/" << node->get_name() << "@";
@@ -50,8 +50,14 @@ std::string create_callback_group_id(const rclcpp::CallbackGroup::SharedPtr &gro
   return ret;
 }
 
+std::string create_callback_group_id(rclcpp::CallbackGroup::SharedPtr group, rclcpp::Node::SharedPtr node) {
+  return create_callback_group_id(group, node->get_node_base_interface());
+}
+
 rclcpp::Publisher<thread_config_msgs::msg::CallbackGroupInfo>::SharedPtr create_client_publisher() {
-  auto node = std::make_shared<rclcpp::Node>("client_node", "/ros2_thread_configurator");
+  static int idx = 1;
+
+  auto node = std::make_shared<rclcpp::Node>("client_node" + std::to_string(idx++), "/ros2_thread_configurator");
   auto publisher = node->create_publisher<thread_config_msgs::msg::CallbackGroupInfo>("/ros2_thread_configurator/callback_group_info", 10);
   return publisher;
 }

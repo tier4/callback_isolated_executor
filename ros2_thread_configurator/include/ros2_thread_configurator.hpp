@@ -8,7 +8,9 @@
 
 namespace ros2_thread_configurator {
 
-std::string create_callback_group_id(const rclcpp::CallbackGroup::SharedPtr &group, const rclcpp::Node::SharedPtr &node);
+std::string create_callback_group_id(rclcpp::CallbackGroup::SharedPtr group, rclcpp::Node::SharedPtr node);
+
+std::string create_callback_group_id(rclcpp::CallbackGroup::SharedPtr group, rclcpp::node_interfaces::NodeBaseInterface::SharedPtr node);
 
 // Caution: Do not call in parallel
 // Caution: Must be called after rclcpp::init() called
