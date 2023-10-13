@@ -40,8 +40,18 @@ bool ThreadConfiguratorNode::all_applied() {
   return unapplied_num_ == 0;
 }
 
+void ThreadConfiguratorNode::print_all_unapplied() {
+  RCLCPP_WARN(this->get_logger(), "Following callback grouds are not yet configured");
+
+  for (auto &config : callback_group_configs_) {
+    if (!config.applied) {
+      RCLCPP_WARN(this->get_logger(), "  - %s", config.callback_group_id.c_str());
+    }
+  }
+}
+
 bool ThreadConfiguratorNode::issue_syscalls(const CallbackGroupConfig &config) const {
-  {
+  if (config.affinity.size() > 0) {
     cpu_set_t set;
     CPU_ZERO(&set);
     for (int cpu : config.affinity) CPU_SET(cpu, &set);

@@ -21,6 +21,7 @@ class ThreadConfiguratorNode : public rclcpp::Node {
 public:
   ThreadConfiguratorNode(const YAML::Node &yaml);
   bool all_applied();
+  void print_all_unapplied();
 
 private:
   bool issue_syscalls(const CallbackGroupConfig &config) const;
