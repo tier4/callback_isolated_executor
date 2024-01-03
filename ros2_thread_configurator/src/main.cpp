@@ -28,7 +28,10 @@ static void spin_thread_configurator_node(const std::string &config_filename) {
   }
 
   if (node->all_applied()) {
-    RCLCPP_INFO(node->get_logger(), "Success: All of the configurations are applied. shutting down...");
+    RCLCPP_INFO(node->get_logger(),
+                "Success: All of the configurations are applied. "
+                "Press enter to exit and remove cgroups:");
+    std::cin.get();
   } else {
     node->print_all_unapplied();
   }
