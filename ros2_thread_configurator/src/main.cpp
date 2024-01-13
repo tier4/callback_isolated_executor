@@ -29,8 +29,8 @@ static void spin_thread_configurator_node(const std::string &config_filename) {
 
   if (node->all_applied()) {
     RCLCPP_INFO(node->get_logger(),
-                "Success: All of the configurations are applied. "
-                "Press enter to exit and remove cgroups:");
+                "Success: All of the configurations are applied."
+                "\nPress enter to exit and remove cgroups, if there are SCHED_DEADLINE tasks:");
     std::cin.get();
   } else {
     node->print_all_unapplied();
