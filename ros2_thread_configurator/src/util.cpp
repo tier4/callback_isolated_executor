@@ -58,7 +58,7 @@ rclcpp::Publisher<thread_config_msgs::msg::CallbackGroupInfo>::SharedPtr create_
   static int idx = 1;
 
   auto node = std::make_shared<rclcpp::Node>("client_node" + std::to_string(idx++), "/ros2_thread_configurator");
-  auto publisher = node->create_publisher<thread_config_msgs::msg::CallbackGroupInfo>("/ros2_thread_configurator/callback_group_info", 10);
+  auto publisher = node->create_publisher<thread_config_msgs::msg::CallbackGroupInfo>("/ros2_thread_configurator/callback_group_info", rclcpp::QoS(1000).keep_all());
   return publisher;
 }
 
