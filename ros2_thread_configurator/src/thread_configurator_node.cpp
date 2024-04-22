@@ -47,8 +47,9 @@ ThreadConfiguratorNode::ThreadConfiguratorNode(const YAML::Node &yaml) : Node("t
     }
   }
 
+  auto qos = rclcpp::QoS(rclcpp::QoSInitialization(RMW_QOS_POLICY_HISTORY_KEEP_LAST, 1000)).reliable();
   subscription_ = this->create_subscription<thread_config_msgs::msg::CallbackGroupInfo>(
-    "/ros2_thread_configurator/callback_group_info", rclcpp::QoS(1000).keep_all(), std::bind(&ThreadConfiguratorNode::topic_callback, this, std::placeholders::_1));
+    "/ros2_thread_configurator/callback_group_info", qos, std::bind(&ThreadConfiguratorNode::topic_callback, this, std::placeholders::_1));
 }
 
 ThreadConfiguratorNode::~ThreadConfiguratorNode() {
@@ -144,6 +145,7 @@ bool ThreadConfiguratorNode::issue_syscalls(const CallbackGroupConfig &config) {
 
   } else if (config.policy == "SCHED_DEADLINE") {
     struct sched_attr attr;
+    memset(&attr, 0, sizeof(attr));
     attr.size = sizeof(attr);
     attr.sched_flags = 0;
     attr.sched_nice = 0;
@@ -201,11 +203,22 @@ void ThreadConfiguratorNode::topic_callback(const thread_config_msgs::msg::Callb
   }
 
   config->thread_id = msg->thread_id;
-  bool success = issue_syscalls(*config);
 
-  if (!success) return;
+  if (config->policy == "SCHED_DEADLINE") {
+    deadline_configs_.push_back(config);
+  } else {
+    bool success = issue_syscalls(*config);
+    if (!success) return;
+  }
 
   config->applied = true;
   unapplied_num_--;
 }
 
+bool ThreadConfiguratorNode::apply_deadline_configs() {
+  for (auto config : deadline_configs_) {
+    if (!issue_syscalls(*config)) return false;
+  }
+
+  return true;
+}

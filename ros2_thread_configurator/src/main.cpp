@@ -16,6 +16,7 @@ static void spin_thread_configurator_node(const std::string &config_filename) {
     std::cout << config << std::endl;
   } catch (const std::exception &e) {
     std::cerr << "Error reading the YAML file: " << e.what() << std::endl;
+    return;
   }
 
   auto node = std::make_shared<ThreadConfiguratorNode>(config);
@@ -28,6 +29,11 @@ static void spin_thread_configurator_node(const std::string &config_filename) {
   }
 
   if (node->all_applied()) {
+    RCLCPP_INFO(node->get_logger(), "Apply sched deadline?");
+    std::cin.get();
+
+    node->apply_deadline_configs();
+
     RCLCPP_INFO(node->get_logger(),
                 "Success: All of the configurations are applied."
                 "\nPress enter to exit and remove cgroups, if there are SCHED_DEADLINE tasks:");

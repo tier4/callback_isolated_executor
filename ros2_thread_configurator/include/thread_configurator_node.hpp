@@ -30,6 +30,8 @@ public:
   bool all_applied();
   void print_all_unapplied();
 
+  bool apply_deadline_configs();
+
 private:
   bool set_affinity_by_cgroup(int64_t thread_id, const std::vector<int>& cpus);
   bool issue_syscalls(const CallbackGroupConfig &config);
@@ -41,5 +43,7 @@ private:
   std::unordered_map<std::string, CallbackGroupConfig*> id_to_callback_group_config_;
   int unapplied_num_;
   int cgroup_num_;
+
+  std::vector<CallbackGroupConfig*> deadline_configs_;
 };
 
