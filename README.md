@@ -1,4 +1,4 @@
-# callback_isolated_executor
+# callback_isolated_executor (WIP)
 The ComponentContainer and Executor that assign a dedicated thread for each callback group.
 
 ## Build and Install
