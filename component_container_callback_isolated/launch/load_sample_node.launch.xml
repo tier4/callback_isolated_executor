@@ -1,0 +1,6 @@
+<launch>
+    <load_composable_node target="sample_container">
+        <composable_node pkg="rclcpp_component_container_callback_isolated" plugin="SampleNode" name="sample_node" namespace="">
+        </composable_node>
+    </load_composable_node>
+</launch>
