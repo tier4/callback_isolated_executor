@@ -14,7 +14,10 @@ namespace ros2_thread_configurator {
 std::string create_callback_group_id(rclcpp::CallbackGroup::SharedPtr group, rclcpp::node_interfaces::NodeBaseInterface::SharedPtr node) {
   std::stringstream ss;
 
-  ss << node->get_namespace() << "/" << node->get_name() << "@";
+  std::string ns = std::string(node->get_namespace());
+  if (ns != "/") ns = ns + "/";
+
+  ss << ns << node->get_name() << "@";
 
   auto sub_func = [&ss](const rclcpp::SubscriptionBase::SharedPtr &sub) {
     ss << "Subscription(" << sub->get_topic_name() << ")@";

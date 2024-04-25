@@ -15,35 +15,37 @@ PrerunNode::PrerunNode() : Node("prerun_node") {
 }
 
 void PrerunNode::topic_callback(const thread_config_msgs::msg::CallbackGroupInfo::SharedPtr msg) {
+  if (callback_group_ids_.find(msg->callback_group_id) != callback_group_ids_.end()) return;
+
   RCLCPP_INFO(this->get_logger(), "Received CallbackGroupInfo: tid=%ld | %s", msg->thread_id, msg->callback_group_id.c_str());
 
-  callback_group_ids_.push_back(msg->callback_group_id);
+  callback_group_ids_.insert(msg->callback_group_id);
 }
 
 void PrerunNode::dump_yaml_config(std::filesystem::path path) {
-  YAML::Node yaml;
-  YAML::Node callback_groups;
-  yaml["callback_groups"] = callback_groups;
+    YAML::Emitter out;
 
-  for (const std::string &callback_group_id : callback_group_ids_) {
-    YAML::Node callback_group;
-    callback_group["id"] = callback_group_id;
+    out << YAML::BeginMap;
+    out << YAML::Key << "callback_groups";
+    out << YAML::Value << YAML::BeginSeq;
 
-    YAML::Node affinity;
-    affinity.push_back(0);
-    affinity.push_back(1);
-    callback_group["affinity"] = affinity;
+    for (const std::string &callback_group_id : callback_group_ids_) {
+        out << YAML::BeginMap;
+        out << YAML::Key << "id" << YAML::Value << callback_group_id;
+        out << YAML::Key << "affinity" << YAML::Value << YAML::Null;
+        out << YAML::Key << "policy" << YAML::Value << "SCHED_OTHER";
+        out << YAML::Key << "priority" << YAML::Value << 0;
+        out << YAML::EndMap;
+        out << YAML::Newline;
+    }
 
-    callback_group["policy"] = "SCHED_OTHER";
-    callback_group["priority"] = 0;
+    out << YAML::EndSeq;
+    out << YAML::EndMap;
 
-    callback_groups.push_back(callback_group);
-  }
+    std::ofstream fout(path / "template.yaml");
+    fout << out.c_str();
+    fout.close();
 
-  std::ofstream fout(path / "template.yaml");
-  fout << yaml;
-  fout.close();
-
-  RCLCPP_INFO(this->get_logger(), "template.yaml is created in the current directory");
+    std::cout << "template.yaml is created in the current directory" << std::endl;
 }
 

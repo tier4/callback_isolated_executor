@@ -1,6 +1,7 @@
 #pragma once
 
 #include <filesystem>
+#include <set>
 #include <string>
 
 #include "yaml-cpp/yaml.h"
@@ -17,6 +18,6 @@ private:
   void topic_callback(const thread_config_msgs::msg::CallbackGroupInfo::SharedPtr msg);
 
   rclcpp::Subscription<thread_config_msgs::msg::CallbackGroupInfo>::SharedPtr subscription_;
-  std::vector<std::string> callback_group_ids_;
+  std::set<std::string> callback_group_ids_;
 };
 
