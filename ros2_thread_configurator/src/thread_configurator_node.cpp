@@ -15,36 +15,29 @@
 #include "thread_configurator_node.hpp"
 #include "sched_deadline.hpp"
 
-ThreadConfiguratorNode::ThreadConfiguratorNode(const YAML::Node &yaml) : Node("thread_configurator_node"), unapplied_num_(0), cgroup_num_(0) {
-  {
-    YAML::Node callback_groups = yaml["callback_groups"];
-    unapplied_num_ = callback_groups.size();
-    callback_group_configs_.resize(callback_groups.size());
+ThreadConfiguratorNode::ThreadConfiguratorNode(const YAML::Node &yaml)
+  : Node("thread_configurator_node"), unapplied_num_(0), cgroup_num_(0) {
+  YAML::Node callback_groups = yaml["callback_groups"];
+  unapplied_num_ = callback_groups.size();
+  callback_group_configs_.resize(callback_groups.size());
 
-    for (size_t i = 0; i < callback_groups.size(); i++) {
-      const auto &callback_group = callback_groups[i];
-      auto &config = callback_group_configs_[i];
+  for (size_t i = 0; i < callback_groups.size(); i++) {
+    const auto &callback_group = callback_groups[i];
+    auto &config = callback_group_configs_[i];
 
-      config.callback_group_id = callback_group["id"].as<std::string>();
-      for (auto &cpu : callback_group["affinity"]) config.affinity.push_back(cpu.as<int>());
-      config.policy = callback_group["policy"].as<std::string>();
+    config.callback_group_id = callback_group["id"].as<std::string>();
+    for (auto &cpu : callback_group["affinity"]) config.affinity.push_back(cpu.as<int>());
+    config.policy = callback_group["policy"].as<std::string>();
 
-      if (config.policy == "SCHED_DEADLINE") {
-        config.runtime = callback_group["runtime"].as<unsigned int>();
-        config.period = callback_group["period"].as<unsigned int>();
-        config.deadline = callback_group["deadline"].as<unsigned int>();
-      } else {
-        config.priority = callback_group["priority"].as<int>();
-      }
-
-      if (config.policy == "SCHED_DEADLINE") {
-        config.runtime = callback_group["runtime"].as<unsigned int>();
-        config.period = callback_group["period"].as<unsigned int>();
-        config.deadline = callback_group["deadline"].as<unsigned int>();
-      }
-
-      id_to_callback_group_config_[config.callback_group_id] = &config;
+    if (config.policy == "SCHED_DEADLINE") {
+      config.runtime = callback_group["runtime"].as<unsigned int>();
+      config.period = callback_group["period"].as<unsigned int>();
+      config.deadline = callback_group["deadline"].as<unsigned int>();
+    } else {
+      config.priority = callback_group["priority"].as<int>();
     }
+
+    id_to_callback_group_config_[config.callback_group_id] = &config;
   }
 
   auto qos = rclcpp::QoS(rclcpp::QoSInitialization(RMW_QOS_POLICY_HISTORY_KEEP_LAST, 1000)).reliable();
@@ -65,7 +58,7 @@ bool ThreadConfiguratorNode::all_applied() {
 }
 
 void ThreadConfiguratorNode::print_all_unapplied() {
-  RCLCPP_WARN(this->get_logger(), "Following callback grouds are not yet configured");
+  RCLCPP_WARN(this->get_logger(), "Following callback groups are not yet configured");
 
   for (auto &config : callback_group_configs_) {
     if (!config.applied) {
@@ -76,9 +69,7 @@ void ThreadConfiguratorNode::print_all_unapplied() {
 
 bool ThreadConfiguratorNode::set_affinity_by_cgroup(int64_t thread_id, const std::vector<int>& cpus) {
   std::string cgroup_path = "/sys/fs/cgroup/cpuset/" + std::to_string(cgroup_num_++);
-  if (!std::filesystem::create_directory(cgroup_path)) {
-    return false;
-  }
+  if (!std::filesystem::create_directory(cgroup_path)) return false;
 
   std::string cpus_path = cgroup_path + "/cpuset.cpus";
   if (std::ofstream cpus_file{cpus_path}) {
@@ -169,8 +160,7 @@ bool ThreadConfiguratorNode::issue_syscalls(const CallbackGroupConfig &config) {
         RCLCPP_ERROR(this->get_logger(), "Failed to configure affinity (id=%s, tid=%ld): %s",
             config.callback_group_id.c_str(), config.thread_id, "Please disable cgroup v2 if used: `systemd.unified_cgroup_hierarchy=0`");
         return false;
-        }
-
+      }
     } else {
       cpu_set_t set;
       CPU_ZERO(&set);
@@ -187,24 +177,24 @@ bool ThreadConfiguratorNode::issue_syscalls(const CallbackGroupConfig &config) {
 }
 
 void ThreadConfiguratorNode::topic_callback(const thread_config_msgs::msg::CallbackGroupInfo::SharedPtr msg) {
-  RCLCPP_INFO(this->get_logger(), "Received CallbackGroupInfo: tid=%ld | %s", msg->thread_id, msg->callback_group_id.c_str());
-
   auto it = id_to_callback_group_config_.find(msg->callback_group_id);
   if (it == id_to_callback_group_config_.end()) {
-    RCLCPP_WARN(this->get_logger(), "A config entry with the specified callback group id is not found (id=%s, tid=%ld)",
+    RCLCPP_INFO(this->get_logger(), "Received CallbackGroupInfo: but the yaml file does not contain configuration for id=%s (tid=%ld)",
         msg->callback_group_id.c_str(), msg->thread_id);
     return;
   }
 
   CallbackGroupConfig *config = it->second;
   if (config->applied) {
-    RCLCPP_WARN(this->get_logger(), "This callback group is already configured. skip (id=%s)", msg->callback_group_id.c_str());
+    RCLCPP_INFO(this->get_logger(), "This callback group is already configured. skip (id=%s, tid=%ld)", msg->callback_group_id.c_str(), msg->thread_id);
     return;
   }
 
+  RCLCPP_INFO(this->get_logger(), "Received CallbackGroupInfo: tid=%ld | %s", msg->thread_id, msg->callback_group_id.c_str());
   config->thread_id = msg->thread_id;
 
   if (config->policy == "SCHED_DEADLINE") {
+    // delayed applying
     deadline_configs_.push_back(config);
   } else {
     bool success = issue_syscalls(*config);
