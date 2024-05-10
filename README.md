@@ -112,6 +112,8 @@ callback_groups:
 
 Once the creation of template.yaml is complete, please also terminate the target ROS 2 application.
 
+For the detailed specifications of the configuration file, please refer to https://github.com/sykwer/callback_isolated_executor/tree/main/ros2_thread_configurator#yaml-configuration-file-format.
+
 ### Step4: Edit yaml file for scheduler configuration
 Change the file name and edit to configure each callback group.
 ```bash
