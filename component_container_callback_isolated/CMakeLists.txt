@@ -13,7 +13,6 @@ find_package(std_msgs REQUIRED)
 
 find_package(thread_config_msgs REQUIRED)
 find_package(ros2_thread_configurator REQUIRED)
-find_package(thread_config_msgs REQUIRED)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -25,22 +24,6 @@ if(BUILD_TESTING)
   #set(ament_cmake_cpplint_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
 endif()
-
-add_library(sample_node SHARED src/sample_node.cpp src/static_callback_isolated_executor.cpp)
-target_compile_definitions(sample_node PRIVATE "COMPOSITION_BUILDING_DLL")
-ament_target_dependencies(sample_node rclcpp rclcpp_components std_msgs ros2_thread_configurator)
-target_include_directories(sample_node PRIVATE
-  ${ros2_thread_configurator_INCLUDE_DIRS}
-  ${CMAKE_CURRENT_SOURCE_DIR}/include
-)
-rclcpp_components_register_nodes(sample_node "SampleNode")
-
-add_executable(sample_node2 src/sample_node.cpp src/static_callback_isolated_executor.cpp)
-ament_target_dependencies(sample_node2 rclcpp rclcpp_components std_msgs ros2_thread_configurator)
-target_include_directories(sample_node2 PRIVATE
-  ${ros2_thread_configurator_INCLUDE_DIRS}
-  ${CMAKE_CURRENT_SOURCE_DIR}/include
-)
 
 add_executable(component_container_callback_isolated src/component_container_callback_isolated.cpp)
 ament_target_dependencies(component_container_callback_isolated rclcpp rclcpp_components ros2_thread_configurator)
@@ -66,8 +49,6 @@ install(
   DESTINATION include
 )
 
-install(TARGETS sample_node2 component_container_callback_isolated component_container_single DESTINATION lib/${PROJECT_NAME})
-install(TARGETS sample_node DESTINATION lib)
 install(DIRECTORY launch/ DESTINATION share/${PROJECT_NAME}/launch)
 
 ament_export_dependencies(ros2_thread_configurator thread_config_msgs)
