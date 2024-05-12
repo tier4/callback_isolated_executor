@@ -112,8 +112,6 @@ callback_groups:
 
 Once the creation of template.yaml is complete, please also terminate the target ROS 2 application.
 
-For the detailed specifications of the configuration file, please refer to https://github.com/sykwer/callback_isolated_executor/tree/main/ros2_thread_configurator#yaml-configuration-file-format.
-
 ### Step4: Edit yaml file for scheduler configuration
 Change the file name and edit to configure each callback group.
 ```bash
@@ -122,6 +120,7 @@ $ vim your_config.yaml
 ```
 
 For callback groups that do not require configuration, you can either delete the entry entirely or leave it as is because the default values in `template.yaml` are set with default nice values and no affinity settings on the CFS scheduler.
+For the detailed specifications of the configuration file, please refer to https://github.com/sykwer/callback_isolated_executor/tree/main/ros2_thread_configurator#yaml-configuration-file-format.
 
 ### Step5: Launch your app with scheduler configuration
 To launch the target ROS 2 application with the scheduler settings applied from the your_config.yaml you created, first start the configurator node with the following command.
@@ -149,6 +148,22 @@ The entries above the waiting message each show the callback group ID and OS thr
 
 At this stage, settings with policies other than `SCHED_DEADLINE` have already been applied, while the application of settings including the `SCHED_DEADLINE` policy is postponed.
 To apply settings that include the `SCHED_DEADLINE` policy, press the enter key in the window where `Apply sched deadline?` is displayed.
+
+<details>
+<summary>Why delayed configuration of the SCHED_DEADLINE policy?</summary>
+  
+We delay the applying of settings with the `SCHED_DEADLINE` policy because Autoware (main application area for this tool) contains nodes that implicitly create new threads immediately after startup, such as the EKF Localizer.
+Threads specified with the `SCHED_DEADLINE` policy are prohibited from creating new child tasks.
+Generally, real-time scheduling policies fail with an `EAGAIN` error when `clone(2)` is issued without the `SCHED_FLAG_RESET_ON_FORK` flag set.
+However, setting this flag for `SCHED_DEADLINE` threads is impossible due to the following facts:
+- According to [the Linux documentation for sched_setattr(2)](https://man7.org/linux/man-pages/man2/sched_setattr.2.html), the `flags` argument is currently required to be set to `0`, indicating that `SCHED_FLAG_RESET_ON_FORK` can only be set via `sched_setscheduler(2)`.
+- According to [the Linux documentation for sched_setscheduler(2)](https://man7.org/linux/man-pages/man2/sched_setscheduler.2.html), the `SCHED_DEADLINE` policy can only be set via `sched_setattr(2)` and not through `sched_setscheduler(2)`.
+
+Thus, we adopt a workaround where we delay only the settings that include the `SCHED_DEADLINE` policy.
+Autoware's EKF Localizer creates child threads immediately after starting and does not create more afterwards (these child threads are likely deleted soon after).
+Therefore, applying the `SCHED_DEADLINE` policy after the system has started, such as after starting playback of a rosbag or the operation of a real vehicle system, will not cause issues.
+You need to apply the `SCHED_DEADLINE` policy only after the system has fully started up and no further creation of new child threads is expected.
+</details>
 
 ![Screenshot from 2024-05-10 10-52-47](https://github.com/sykwer/callback_isolated_executor/assets/18254663/aad2151d-1ff8-496c-9fdf-c4ada7e22a76)
 
