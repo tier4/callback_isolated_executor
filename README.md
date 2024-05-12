@@ -30,6 +30,21 @@ To enable the configuration, type the command below.
 $ sudo ldconfig
 ```
 
+## Kernel Boot Parameter
+According to [the Linux Kernel documentation](https://www.kernel.org/doc/Documentation/scheduler/sched-deadline.txt), setting the affinity for `SCHED_DEADLINE` tasks requires the use of cgroup v1 features.
+To use cgroup v1, it is necessary to disable cgroup v2 by specifying `systemd.unified_cgroup_hierarchy=0` in the kernel boot parameters.
+
+To change the kernel boot parameters, edit `/etc/default/grub` and add the parameter to `GRUB_CMDLINE_LINUX_DEFAULT`:
+```
+GRUB_CMDLINE_LINUX_DEFAULT="... systemd.unified_cgroup_hierarchy=0 ..."
+```
+
+To apply these changes, run the following commands. After rebooting, the features of cgroup v1 will be available:
+```bash
+$ sudo update-grub
+$ sudo reboot
+```
+
 ## Usage
 ### Step1: Rewrite your app
 When running a node within `ComponentContainerCallbackIsolated`, you don't need to modify the node's implementation.
