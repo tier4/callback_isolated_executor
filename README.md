@@ -49,6 +49,7 @@ $ sudo reboot
 ### Step1: Rewrite your app
 When running a node within `ComponentContainerCallbackIsolated`, you don't need to modify the node's implementation.
 However, if starting the node directly from the main function without using ComponentContainer, you need to modify the node's implementation as shown below and rebuild it.
+Refer to the source code in the [sample_app_callback_isolated](https://github.com/sykwer/callback_isolated_executor/tree/main/sample_app_callback_isolated) package to understand how to modify your app.
 
 #### Option1: Launch without ComponentContainer
 If you are launching a node directly from the main function without using a ComponentContainer, change the name of the Executor.
