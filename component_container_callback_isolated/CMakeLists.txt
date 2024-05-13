@@ -49,8 +49,6 @@ install(
   DESTINATION include
 )
 
-install(DIRECTORY launch/ DESTINATION share/${PROJECT_NAME}/launch)
-
 ament_export_dependencies(ros2_thread_configurator thread_config_msgs)
 
 ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
