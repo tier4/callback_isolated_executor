@@ -15,9 +15,7 @@
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
   <depend>std_msgs</depend>
-
-  <depend>thread_config_msgs</depend>
-  <depend>ros2_thread_configurator</depend>
+  
   <depend>rclcpp_component_container_callback_isolated</depend>
 
   <export>
