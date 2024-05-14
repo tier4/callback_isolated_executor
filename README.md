@@ -53,6 +53,22 @@ Refer to the source code in the [sample_app_callback_isolated](https://github.co
 
 #### Option1: Launch without ComponentContainer
 If you are launching a node directly from the main function without using a ComponentContainer, change the name of the Executor.
+```xml
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  ...
+  <depend>rclcpp_component_container_callback_isolated</depend>
+  ...
+</package>
+```
+```cmake
+...
+find_package(rclcpp_component_container_callback_isolated REQUIRED)
+...
+ament_target_dependencies(your_executable ... rclcpp_component_container_callback_isolated)
+...
+```
 ```cpp
 #include "static_callback_isolated_executor.hpp"
 
@@ -70,8 +86,14 @@ int main(int argc, char * argv[]) {
 }
 ```
 
+<details>
+<summary>Why named "Static"CallbackIsolatedExecutor ?</summary>
+  
+For performance reasons, we were using `StaticSingleThreadedExecutor` internally. Currently, we are temporarily using `SingleThreadedExecutor` internally because CARET does not yet support `StaticSingleThreadedExecutor`.
+</details>
+
 #### Option2: Launch with ComponentContainer
-If you are launching a node within `ComponentContainerCallbackIsolated`, all you have to do is modifying the launch file as below.
+If you are launching a node within `ComponentContainerCallbackIsolated`, all you have to do is modify the launch file as below.
 ```xml
 <launch>
   <node_container pkg="rclcpp_component_container_callback_isolated" exec="component_container_callback_isolated" name="sample_container" namespace="">
@@ -79,6 +101,16 @@ If you are launching a node within `ComponentContainerCallbackIsolated`, all you
       ...
     </composable_node>
   </node_container>
+</launch>
+```
+
+Or, you can load the node to the existing component container.
+```xml
+<launch>
+    <load_composable_node target="sample_container">
+        <composable_node pkg="rclcpp_component_container_callback_isolated" plugin="SampleNode" name="sample_node" namespace="">
+        </composable_node>
+    </load_composable_node>
 </launch>
 ```
 
@@ -186,11 +218,3 @@ You need to apply the `SCHED_DEADLINE` policy only after the system has fully st
 While the target ROS 2 application is running, the configurator node's window should not be closed and must remain open.
 After the execution of the target ROS 2 application has ended, press the enter key in the window displaying `Press enter to exit and remove cgroups...`.
 This will terminate the execution of the configurator node and simultaneously delete the cgroup that was created for setting the affinity of tasks with the `SCHED_DEADLINE` policy.
-
-
-## TODO
-### Why delayed configuration of SCHED_DEADLINE policy
-WIP
-
-### Why named `StaticCallbackIsolatedExecutor`
-WIP
