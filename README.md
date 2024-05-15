@@ -30,6 +30,15 @@ To enable the configuration, type the command below.
 $ sudo ldconfig
 ```
 
+<details>
+<summary>Why ldconfig changed?</summary>
+
+
+When specific permissions are granted to an ELF binary using setcap, for security reasons, environment variables like `LD_PRELOAD` and `LD_LIBRARY_PATH` are ignored.
+While setting `RUNPATH` on the binary comes to mind as a solution, `RUNPATH` does not easily handle recursive dynamic linking.
+In such cases, modifying `/etc/ld.so.conf.d/` is the only option.
+</details>
+
 ## Kernel Boot Parameter
 According to [the Linux Kernel documentation](https://www.kernel.org/doc/Documentation/scheduler/sched-deadline.txt), setting the affinity for `SCHED_DEADLINE` tasks requires the use of cgroup v1 features.
 To use cgroup v1, it is necessary to disable cgroup v2 by specifying `systemd.unified_cgroup_hierarchy=0` in the kernel boot parameters.
