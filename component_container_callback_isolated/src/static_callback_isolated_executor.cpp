@@ -10,6 +10,9 @@
 #include "static_callback_isolated_executor.hpp"
 
 void StaticCallbackIsolatedExecutor::add_node(const rclcpp::Node::SharedPtr &node) {
+  node_ = node->get_node_base_interface();
+}
+void StaticCallbackIsolatedExecutor::add_node(const rclcpp::node_interfaces::NodeBaseInterface::SharedPtr &node) {
   node_ = node;
 }
 
@@ -21,12 +24,13 @@ void StaticCallbackIsolatedExecutor::spin() {
   node_->for_each_callback_group([this, &executors, &callback_group_ids](rclcpp::CallbackGroup::SharedPtr group) {
       if (group->get_associated_with_executor_atomic().load()) {
         std::string id = ros2_thread_configurator::create_callback_group_id(group, node_);
-        RCLCPP_WARN(node_->get_logger(), "A callback group (%s) has been already added to an executor. skip.", id.c_str());
+        //RCLCPP_WARN(node_->get_logger(), "A callback group (%s) has been already added to an executor. skip.", id.c_str());
         return;
       }
 
       auto executor = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
-      executor->add_callback_group(group, node_->get_node_base_interface());
+      //executor->add_callback_group(group, node_->get_node_base_interface());
+      executor->add_callback_group(group, node_);
       executors.push_back(executor);
       callback_group_ids.push_back(ros2_thread_configurator::create_callback_group_id(group, node_));
   });
@@ -48,4 +52,3 @@ void StaticCallbackIsolatedExecutor::spin() {
     t.join();
   }
 }
-
