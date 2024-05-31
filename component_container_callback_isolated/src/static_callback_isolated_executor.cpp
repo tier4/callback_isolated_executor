@@ -10,23 +10,26 @@
 #include "static_callback_isolated_executor.hpp"
 
 void StaticCallbackIsolatedExecutor::add_node(const rclcpp::Node::SharedPtr &node) {
+  node_ = node->get_node_base_interface();
+}
+void StaticCallbackIsolatedExecutor::add_node(const rclcpp::node_interfaces::NodeBaseInterface::SharedPtr &node) {
   node_ = node;
 }
 
 void StaticCallbackIsolatedExecutor::spin() {
   std::vector<std::thread> threads;
-  std::vector<rclcpp::executors::SingleThreadedExecutor::SharedPtr> executors;
   std::vector<std::string> callback_group_ids;
 
-  node_->for_each_callback_group([this, &executors, &callback_group_ids](rclcpp::CallbackGroup::SharedPtr group) {
+  node_->for_each_callback_group([this, &callback_group_ids](rclcpp::CallbackGroup::SharedPtr group) {
       if (group->get_associated_with_executor_atomic().load()) {
         std::string id = ros2_thread_configurator::create_callback_group_id(group, node_);
-        RCLCPP_WARN(node_->get_logger(), "A callback group (%s) has been already added to an executor. skip.", id.c_str());
+        //RCLCPP_WARN(node_->get_logger(), "A callback group (%s) has been already added to an executor. skip.", id.c_str());
         return;
       }
 
-      auto executor = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
-      executor->add_callback_group(group, node_->get_node_base_interface());
+      auto executor = std::make_shared<rclcpp::executors::StaticSingleThreadedExecutor>();
+      //executor->add_callback_group(group, node_->get_node_base_interface());
+      executor->add_callback_group(group, node_);
       executors.push_back(executor);
       callback_group_ids.push_back(ros2_thread_configurator::create_callback_group_id(group, node_));
   });
@@ -49,3 +52,13 @@ void StaticCallbackIsolatedExecutor::spin() {
   }
 }
 
+void StaticCallbackIsolatedExecutor::remove_node(const rclcpp::Node::SharedPtr &node){
+  this->remove_node(node->get_node_base_interface());
+}
+
+void StaticCallbackIsolatedExecutor::remove_node(const rclcpp::node_interfaces::NodeBaseInterface::SharedPtr &node){
+    //executors[0]->remove_node(node, false);
+    for(auto &e : executors){
+      e->remove_node(node, false);
+    }
+}
