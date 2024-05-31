@@ -59,6 +59,12 @@ install(
   DESTINATION share/${PROJECT_NAME}
 )
 
+# Install executables
+install(
+  TARGETS component_container_callback_isolated component_container_single
+  RUNTIME DESTINATION lib/${PROJECT_NAME}
+)
+
 ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
 ament_export_include_directories(include)
 
