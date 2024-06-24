@@ -28,7 +28,7 @@
 # :type RESOURCE_INDEX: string
 #
 macro(callback_rclcpp_components_register_node target)
-  cmake_parse_arguments(ARGS "" "PLUGIN;EXECUTABLE;EXECUTOR;RESOURCE_INDEX" "" ${ARGN})
+  cmake_parse_arguments(ARGS "" "PLUGIN;EXECUTABLE;EXECUTOR;RESOURCE_INDEX;SPIN" "" ${ARGN})
   if(ARGS_UNPARSED_ARGUMENTS)
     message(FATAL_ERROR "rclcpp_components_register_node() called with unused "
       "arguments: ${ARGS_UNPARSED_ARGUMENTS}")
@@ -52,6 +52,12 @@ macro(callback_rclcpp_components_register_node target)
   if(NOT "${ARGS_EXECUTOR}" STREQUAL "")
     set(executor ${ARGS_EXECUTOR})
     message(STATUS "Setting executor non-default value ${executor}")
+  endif()
+
+  set(spin "spin")
+  if(NOT "${ARGS_SPIN}" STREQUAL "")
+    set(spin ${ARGS_EXECUTOR})
+    message(STATUS "Setting executor non-default value ${spin}")
   endif()
 
   set(component ${ARGS_PLUGIN})

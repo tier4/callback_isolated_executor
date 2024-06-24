@@ -57,6 +57,15 @@ std::string create_callback_group_id(rclcpp::CallbackGroup::SharedPtr group, rcl
   return create_callback_group_id(group, node->get_node_base_interface());
 }
 
+std::string create_node_id(rclcpp::node_interfaces::NodeBaseInterface::SharedPtr node) {
+
+  std::string node_id = std::string(node->get_namespace());
+  if (node_id != "/") node_id = node_id + "/";
+
+  node_id = node_id + node->get_name() + "@";
+  return node_id;
+}
+
 rclcpp::Publisher<thread_config_msgs::msg::CallbackGroupInfo>::SharedPtr create_client_publisher() {
   static int idx = 1;
 

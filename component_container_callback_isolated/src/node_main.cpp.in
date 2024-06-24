@@ -63,12 +63,7 @@ int main(int argc, char * argv[])
   loaders.push_back(loader);
 
 
-  exec.spin();
-
-  /*for (auto wrapper : node_wrappers) {
-    exec.remove_node(wrapper.get_node_base_interface());
-  }
-  node_wrappers.clear();*/
+  exec.@spin@();
 
   rclcpp::shutdown();
 

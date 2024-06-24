@@ -28,6 +28,12 @@ endif()
 add_executable(component_container_callback_isolated src/component_container_callback_isolated.cpp)
 ament_target_dependencies(component_container_callback_isolated rclcpp rclcpp_components ros2_thread_configurator)
 
+add_executable(component_container_node src/component_container_node.cpp)
+ament_target_dependencies(component_container_node rclcpp rclcpp_components ros2_thread_configurator)
+
+add_executable(component_container_rt src/component_container_rt.cpp)
+ament_target_dependencies(component_container_rt rclcpp rclcpp_components ros2_thread_configurator)
+
 add_executable(component_container_single src/component_container_single.cpp)
 ament_target_dependencies(component_container_single rclcpp rclcpp_components ros2_thread_configurator)
 
@@ -61,7 +67,7 @@ install(
 
 # Install executables
 install(
-  TARGETS component_container_callback_isolated component_container_single
+  TARGETS component_container_callback_isolated component_container_node component_container_single component_container_rt
   RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 

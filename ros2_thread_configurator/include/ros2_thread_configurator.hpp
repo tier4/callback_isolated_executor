@@ -12,6 +12,8 @@ std::string create_callback_group_id(rclcpp::CallbackGroup::SharedPtr group, rcl
 
 std::string create_callback_group_id(rclcpp::CallbackGroup::SharedPtr group, rclcpp::node_interfaces::NodeBaseInterface::SharedPtr node);
 
+std::string create_node_id(rclcpp::node_interfaces::NodeBaseInterface::SharedPtr node);
+
 // Caution: Do not call in parallel
 // Caution: Must be called after rclcpp::init() called
 rclcpp::Publisher<thread_config_msgs::msg::CallbackGroupInfo>::SharedPtr create_client_publisher();
