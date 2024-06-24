@@ -94,7 +94,7 @@ int main(int argc, char * argv[]) {
   return 0;
 }
 ```
-
+Or, if you want to using realtime policy setting function without callback function level executors, all you need to do is changing `spin()` to `spin_node()`.
 <details>
 <summary>Why named "Static"CallbackIsolatedExecutor ?</summary>
   
@@ -120,6 +120,30 @@ Or, you can load the node to the existing component container.
         <composable_node pkg="rclcpp_component_container_callback_isolated" plugin="SampleNode" name="sample_node" namespace="">
         </composable_node>
     </load_composable_node>
+</launch>
+```
+#### Option3: Launch with ComponentContainer with Node-Level or container-level executors
+If you want to launching a composite container with realtime setting function without overnumber executors, just using `component_container_node` instead of `component_container_callback_isolated`
+
+```xml
+<launch>
+  <node_container pkg="rclcpp_component_container_callback_isolated" exec="component_container_node" name="sample_container" namespace="">
+    <composable_node pkg="rclcpp_component_container_callback_isolated" plugin="SampleNode" name="sample_node" namespace="">
+      ...
+    </composable_node>
+  </node_container>
+</launch>
+```
+
+Moreover, if you want to have something like `component_container`, which only have one `singleThreadedExecutor` in one `container`, `component_container_rt` is the answer.
+
+```xml
+<launch>
+  <node_container pkg="rclcpp_component_container_callback_isolated" exec="component_container_rt" name="sample_container" namespace="">
+    <composable_node pkg="rclcpp_component_container_callback_isolated" plugin="SampleNode" name="sample_node" namespace="">
+      ...
+    </composable_node>
+  </node_container>
 </launch>
 ```
 
