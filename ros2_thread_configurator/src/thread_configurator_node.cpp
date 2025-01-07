@@ -54,7 +54,6 @@ ThreadConfiguratorNode::~ThreadConfiguratorNode() {
 }
 
 bool ThreadConfiguratorNode::all_applied() {
-  RCLCPP_INFO(this->get_logger(), "unapplied_num_ = %d", unapplied_num_);
   return unapplied_num_ == 0;
 }
 
