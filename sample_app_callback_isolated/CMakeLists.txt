@@ -33,24 +33,23 @@ add_executable(sample_node_main src/sample_node_main.cpp)
 target_link_libraries(sample_node_main sample_node)
 ament_target_dependencies(sample_node_main rclcpp rclcpp_component_container_callback_isolated)
 
-# Install the library and executable
 install(TARGETS
-  sample_node
   sample_node_main
   DESTINATION lib/${PROJECT_NAME}
 )
 
-# Install headers
 install(DIRECTORY include/
   DESTINATION include
 )
 
-# If the container is needed, add this as well
 install(TARGETS sample_node
   EXPORT export_${PROJECT_NAME}
-  DESTINATION lib/${PROJECT_NAME}
+  DESTINATION lib
 )
 
 install(DIRECTORY launch/ DESTINATION share/${PROJECT_NAME}/launch)
+
+ament_export_include_directories(include)
+ament_export_libraries(sample_node)
 
 ament_package()
