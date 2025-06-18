@@ -52,20 +52,6 @@ void StaticCallbackIsolatedExecutor::spin() {
   }
 }
 
-void StaticCallbackIsolatedExecutor::spin_node() {
-  auto executor = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
-  executors.push_back(executor);
-  executor->add_node(node_);
-  
-  auto client_publisher = ros2_thread_configurator::create_client_publisher();
-  auto tid = syscall(SYS_gettid);
-  
-  auto node_id = ros2_thread_configurator::create_node_id(node_);
-  ros2_thread_configurator::publish_callback_group_info(client_publisher, tid, node_id);
-  
-  executor->spin();
-}
-
 void StaticCallbackIsolatedExecutor::remove_node(const rclcpp::Node::SharedPtr &node){
   this->remove_node(node->get_node_base_interface());
 }
