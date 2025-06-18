@@ -6,7 +6,7 @@ The ComponentContainer and Executor that assign a dedicated thread for each call
 $ git clone https://github.com/sykwer/callback_isolated_executor.git
 $ cd callback_isolated_executor
 $ source /opt/ros/humble/setup.bash
-$ colcon build
+$ colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
 $ source install/setup.bash
 ```
 
