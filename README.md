@@ -1,6 +1,24 @@
 # callback_isolated_executor
 The ComponentContainer and Executor that assign a dedicated thread for each callback group.
 
+If you find CallbackIsolatedExecutor is useful in your research, please consider citing:
+- T. Ishikawa-Aso, A. Yano, T. Azumi, and S. Kato, “Work in Progress: Middleware-Transparent Callback Enforcement in Commoditized Component-Oriented Real-Time Systems,” in Proc. 2025 IEEE 31st Real-Time and Embedded Technology and Applications Symposium (RTAS), 2025, pp. 426–429.
+
+<details>
+<summary>BibTeX</summary>
+
+```bibtex
+@inproceedings{ishikawa2025work,
+  title={Work in Progress: Middleware-Transparent Callback Enforcement in Commoditized Component-Oriented Real-Time Systems},
+  author={Ishikawa-Aso, Takahiro and Yano, Atsushi and Azumi, Takuya and Kato, Shinpei},
+  booktitle={2025 IEEE 31st Real-Time and Embedded Technology and Applications Symposium (RTAS)},
+  pages={426--429},
+  year={2025},
+  organization={IEEE}
+}
+```
+</details>
+
 ## Build and Install
 ```
 $ git clone https://github.com/sykwer/callback_isolated_executor.git
