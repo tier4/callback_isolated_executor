@@ -28,7 +28,8 @@ class ComponentManagerCallbackIsolated : public rclcpp_components::ComponentMana
 public:
   template<typename... Args>
   ComponentManagerCallbackIsolated(Args&&... args) : rclcpp_components::ComponentManager(std::forward<Args>(args)...) {
-    client_publisher_ = ros2_thread_configurator::create_client_publisher();
+    client_publisher_ = create_publisher<thread_config_msgs::msg::CallbackGroupInfo>(
+        "/ros2_thread_configurator/callback_group_info", rclcpp::QoS(1000).keep_all());
   }
 
   ~ComponentManagerCallbackIsolated();

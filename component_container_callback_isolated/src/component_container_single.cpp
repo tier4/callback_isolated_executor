@@ -20,7 +20,13 @@ int main(int argc, char * argv[])
   rclcpp::init(argc, argv);
 
   std::string config_id = ret;
-  auto config_publisher = ros2_thread_configurator::create_client_publisher();
+
+  auto exec = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
+  auto node = std::make_shared<rclcpp_components::ComponentManager>(exec);
+  exec->add_node(node);
+
+  auto config_publisher = node->create_publisher<thread_config_msgs::msg::CallbackGroupInfo>(
+      "/ros2_thread_configurator/callback_group_info", rclcpp::QoS(1000).keep_all());
   auto tid = syscall(SYS_gettid);
 
   // dirty
@@ -29,8 +35,5 @@ int main(int argc, char * argv[])
     ros2_thread_configurator::publish_callback_group_info(config_publisher, tid, config_id);
   }
 
-  auto exec = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
-  auto node = std::make_shared<rclcpp_components::ComponentManager>(exec);
-  exec->add_node(node);
   exec->spin();
 }
