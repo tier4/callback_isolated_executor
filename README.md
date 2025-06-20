@@ -103,7 +103,7 @@ int main(int argc, char * argv[]) {
   rclcpp::init(argc, argv);
 
   auto node = std::make_shared<SampleNode>();
-  auto executor = std::make_shared<StaticCallbackIsolatedExecutor>();
+  auto executor = std::make_shared<CallbackIsolatedExecutor>();
 
   executor->add_node(node);
   executor->spin();
@@ -112,13 +112,6 @@ int main(int argc, char * argv[]) {
   return 0;
 }
 ```
-
-<details>
-<summary>Why named "Static"CallbackIsolatedExecutor ?</summary>
-
-For performance reasons, we were using `StaticSingleThreadedExecutor` internally. Currently, we are temporarily using `SingleThreadedExecutor` internally because CARET does not yet support `StaticSingleThreadedExecutor`.
-</details>
-
 #### Option2: Launch with ComponentContainer
 If you are launching a node within `ComponentContainerCallbackIsolated`, all you have to do is modify the launch file as below.
 ```xml

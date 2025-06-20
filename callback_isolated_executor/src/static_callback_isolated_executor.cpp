@@ -9,14 +9,14 @@
 
 #include "callback_isolated_executor/callback_isolated_executor.hpp"
 
-void StaticCallbackIsolatedExecutor::add_node(const rclcpp::Node::SharedPtr &node) {
+void CallbackIsolatedExecutor::add_node(const rclcpp::Node::SharedPtr &node) {
   node_ = node->get_node_base_interface();
 }
-void StaticCallbackIsolatedExecutor::add_node(const rclcpp::node_interfaces::NodeBaseInterface::SharedPtr &node) {
+void CallbackIsolatedExecutor::add_node(const rclcpp::node_interfaces::NodeBaseInterface::SharedPtr &node) {
   node_ = node;
 }
 
-void StaticCallbackIsolatedExecutor::spin() {
+void CallbackIsolatedExecutor::spin() {
   std::vector<std::thread> threads;
   std::vector<std::string> callback_group_ids;
 
@@ -52,11 +52,11 @@ void StaticCallbackIsolatedExecutor::spin() {
   }
 }
 
-void StaticCallbackIsolatedExecutor::remove_node(const rclcpp::Node::SharedPtr &node){
+void CallbackIsolatedExecutor::remove_node(const rclcpp::Node::SharedPtr &node){
   this->remove_node(node->get_node_base_interface());
 }
 
-void StaticCallbackIsolatedExecutor::remove_node(const rclcpp::node_interfaces::NodeBaseInterface::SharedPtr &node){
+void CallbackIsolatedExecutor::remove_node(const rclcpp::node_interfaces::NodeBaseInterface::SharedPtr &node){
     //executors[0]->remove_node(node, false);
     for(auto &e : executors){
       e->remove_node(node, false);
