@@ -1,15 +1,14 @@
 cmake_minimum_required(VERSION 3.8)
-project(ros2_thread_configurator)
+project(cie_thread_configurator)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-# find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 
-find_package(thread_config_msgs REQUIRED)
+find_package(cie_config_msgs REQUIRED)
 find_package(yaml-cpp REQUIRED)
 
 if(BUILD_TESTING)
@@ -24,7 +23,7 @@ if(BUILD_TESTING)
 endif()
 
 add_executable(thread_configurator_node src/main.cpp src/thread_configurator_node.cpp src/prerun_node.cpp)
-ament_target_dependencies(thread_configurator_node rclcpp thread_config_msgs)
+ament_target_dependencies(thread_configurator_node rclcpp cie_config_msgs)
 target_link_libraries(thread_configurator_node yaml-cpp)
 
 target_include_directories(thread_configurator_node PRIVATE
@@ -32,7 +31,7 @@ target_include_directories(thread_configurator_node PRIVATE
 )
 
 add_library(thread_configurator SHARED src/util.cpp)
-ament_target_dependencies(thread_configurator rclcpp thread_config_msgs)
+ament_target_dependencies(thread_configurator rclcpp cie_config_msgs)
 
 target_include_directories(thread_configurator PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>

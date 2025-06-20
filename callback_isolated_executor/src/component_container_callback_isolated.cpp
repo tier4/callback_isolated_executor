@@ -6,7 +6,7 @@
 
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_components/component_manager.hpp"
-#include "ros2_thread_configurator.hpp"
+#include "cie_thread_configurator.hpp"
 
 namespace rclcpp_components
 {
@@ -28,8 +28,8 @@ class ComponentManagerCallbackIsolated : public rclcpp_components::ComponentMana
 public:
   template<typename... Args>
   ComponentManagerCallbackIsolated(Args&&... args) : rclcpp_components::ComponentManager(std::forward<Args>(args)...) {
-    client_publisher_ = create_publisher<thread_config_msgs::msg::CallbackGroupInfo>(
-        "/ros2_thread_configurator/callback_group_info", rclcpp::QoS(1000).keep_all());
+    client_publisher_ = create_publisher<cie_config_msgs::msg::CallbackGroupInfo>(
+        "/cie_thread_configurator/callback_group_info", rclcpp::QoS(1000).keep_all());
   }
 
   ~ComponentManagerCallbackIsolated();
@@ -43,7 +43,7 @@ private:
   bool is_clock_callback_group(rclcpp::CallbackGroup::SharedPtr group);
 
   std::unordered_map<uint64_t, std::list<ExecutorWrapper>> node_id_to_executor_wrappers_;
-  rclcpp::Publisher<thread_config_msgs::msg::CallbackGroupInfo>::SharedPtr client_publisher_;
+  rclcpp::Publisher<cie_config_msgs::msg::CallbackGroupInfo>::SharedPtr client_publisher_;
 };
 
 ComponentManagerCallbackIsolated::~ComponentManagerCallbackIsolated() {
@@ -101,7 +101,7 @@ void ComponentManagerCallbackIsolated::add_node_to_executor(uint64_t node_id) {
   auto node = node_wrappers_[node_id].get_node_base_interface();
 
   node->for_each_callback_group([node_id, &node, this](rclcpp::CallbackGroup::SharedPtr callback_group) {
-      std::string group_id = ros2_thread_configurator::create_callback_group_id(callback_group, node);
+      std::string group_id = cie_thread_configurator::create_callback_group_id(callback_group, node);
       std::atomic_bool &has_executor = callback_group->get_associated_with_executor_atomic();
 
       if (is_clock_callback_group(callback_group) /* workaround */ || has_executor.load()) {
@@ -123,7 +123,7 @@ void ComponentManagerCallbackIsolated::add_node_to_executor(uint64_t node_id) {
           // dirty
           for (int i = 0; i < 3; i++) {
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
-            ros2_thread_configurator::publish_callback_group_info(this->client_publisher_, tid, group_id);
+            cie_thread_configurator::publish_callback_group_info(this->client_publisher_, tid, group_id);
           }
 
           executor_wrapper.thread_initialized = true;

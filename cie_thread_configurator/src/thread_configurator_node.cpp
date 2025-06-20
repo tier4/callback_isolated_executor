@@ -11,7 +11,7 @@
 #include "yaml-cpp/yaml.h"
 #include "rclcpp/rclcpp.hpp"
 
-#include "thread_config_msgs/msg/callback_group_info.hpp"
+#include "cie_config_msgs/msg/callback_group_info.hpp"
 #include "thread_configurator_node.hpp"
 #include "sched_deadline.hpp"
 
@@ -41,8 +41,8 @@ ThreadConfiguratorNode::ThreadConfiguratorNode(const YAML::Node &yaml)
   }
 
   auto qos = rclcpp::QoS(rclcpp::QoSInitialization(RMW_QOS_POLICY_HISTORY_KEEP_LAST, 1000)).reliable();
-  subscription_ = this->create_subscription<thread_config_msgs::msg::CallbackGroupInfo>(
-    "/ros2_thread_configurator/callback_group_info", qos, std::bind(&ThreadConfiguratorNode::topic_callback, this, std::placeholders::_1));
+  subscription_ = this->create_subscription<cie_config_msgs::msg::CallbackGroupInfo>(
+    "/cie_thread_configurator/callback_group_info", qos, std::bind(&ThreadConfiguratorNode::topic_callback, this, std::placeholders::_1));
 }
 
 ThreadConfiguratorNode::~ThreadConfiguratorNode() {
@@ -176,7 +176,7 @@ bool ThreadConfiguratorNode::issue_syscalls(const CallbackGroupConfig &config) {
   return true;
 }
 
-void ThreadConfiguratorNode::topic_callback(const thread_config_msgs::msg::CallbackGroupInfo::SharedPtr msg) {
+void ThreadConfiguratorNode::topic_callback(const cie_config_msgs::msg::CallbackGroupInfo::SharedPtr msg) {
   auto it = id_to_callback_group_config_.find(msg->callback_group_id);
   if (it == id_to_callback_group_config_.end()) {
     RCLCPP_INFO(this->get_logger(), "Received CallbackGroupInfo: but the yaml file does not contain configuration for id=%s (tid=%ld)",

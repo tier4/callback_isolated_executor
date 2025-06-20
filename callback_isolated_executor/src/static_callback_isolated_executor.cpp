@@ -5,7 +5,7 @@
 #include <sys/syscall.h>
 
 #include "rclcpp/rclcpp.hpp"
-#include "ros2_thread_configurator.hpp"
+#include "cie_thread_configurator.hpp"
 
 #include "static_callback_isolated_executor.hpp"
 
@@ -22,7 +22,7 @@ void StaticCallbackIsolatedExecutor::spin() {
 
   node_->for_each_callback_group([this, &callback_group_ids](rclcpp::CallbackGroup::SharedPtr group) {
       if (group->get_associated_with_executor_atomic().load()) {
-        std::string id = ros2_thread_configurator::create_callback_group_id(group, node_);
+        std::string id = cie_thread_configurator::create_callback_group_id(group, node_);
         //RCLCPP_WARN(node_->get_logger(), "A callback group (%s) has been already added to an executor. skip.", id.c_str());
         return;
       }
@@ -31,10 +31,10 @@ void StaticCallbackIsolatedExecutor::spin() {
       //executor->add_callback_group(group, node_->get_node_base_interface());
       executor->add_callback_group(group, node_);
       executors.push_back(executor);
-      callback_group_ids.push_back(ros2_thread_configurator::create_callback_group_id(group, node_));
+      callback_group_ids.push_back(cie_thread_configurator::create_callback_group_id(group, node_));
   });
 
-  auto client_publisher = ros2_thread_configurator::create_client_publisher();
+  auto client_publisher = cie_thread_configurator::create_client_publisher();
 
   for (size_t i = 0; i < executors.size(); i++) {
     auto &executor = executors[i];
@@ -42,7 +42,7 @@ void StaticCallbackIsolatedExecutor::spin() {
 
     threads.emplace_back([&executor, &callback_group_id, &client_publisher]() {
         auto tid = syscall(SYS_gettid);
-        ros2_thread_configurator::publish_callback_group_info(client_publisher, tid, callback_group_id);
+        cie_thread_configurator::publish_callback_group_info(client_publisher, tid, callback_group_id);
         executor->spin();
     });
   }
