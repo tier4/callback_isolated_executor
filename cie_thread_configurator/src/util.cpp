@@ -7,7 +7,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include "cie_config_msgs/msg/callback_group_info.hpp"
 
-#include "cie_thread_configurator.hpp"
+#include "cie_thread_configurator/cie_thread_configurator.hpp"
 
 namespace cie_thread_configurator {
 

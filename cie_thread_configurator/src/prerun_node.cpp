@@ -5,9 +5,9 @@
 
 #include "yaml-cpp/yaml.h"
 #include "rclcpp/rclcpp.hpp"
-
 #include "cie_config_msgs/msg/callback_group_info.hpp"
-#include "prerun_node.hpp"
+
+#include "cie_thread_configurator/prerun_node.hpp"
 
 PrerunNode::PrerunNode() : Node("prerun_node") {
   subscription_ = this->create_subscription<cie_config_msgs::msg::CallbackGroupInfo>(

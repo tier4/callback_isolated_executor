@@ -6,7 +6,8 @@
 
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_components/component_manager.hpp"
-#include "cie_thread_configurator.hpp"
+
+#include "cie_thread_configurator/cie_thread_configurator.hpp"
 
 namespace rclcpp_components
 {

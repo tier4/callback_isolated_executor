@@ -2,7 +2,7 @@
 #include <memory>
 #include <sys/syscall.h>
 
-#include "sample_node.hpp"
+#include "cie_sample_application/sample_node.hpp"
 #include "rclcpp_components/register_node_macro.hpp"
 
 using namespace std::chrono_literals;

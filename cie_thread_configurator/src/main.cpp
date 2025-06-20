@@ -5,8 +5,8 @@
 #include "yaml-cpp/yaml.h"
 #include "rclcpp/rclcpp.hpp"
 
-#include "prerun_node.hpp"
-#include "thread_configurator_node.hpp"
+#include "cie_thread_configurator/prerun_node.hpp"
+#include "cie_thread_configurator/thread_configurator_node.hpp"
 
 static void spin_thread_configurator_node(const std::string &config_filename) {
   YAML::Node config;

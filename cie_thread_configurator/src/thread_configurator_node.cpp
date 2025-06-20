@@ -10,10 +10,10 @@
 
 #include "yaml-cpp/yaml.h"
 #include "rclcpp/rclcpp.hpp"
-
 #include "cie_config_msgs/msg/callback_group_info.hpp"
-#include "thread_configurator_node.hpp"
-#include "sched_deadline.hpp"
+
+#include "cie_thread_configurator/thread_configurator_node.hpp"
+#include "cie_thread_configurator/sched_deadline.hpp"
 
 ThreadConfiguratorNode::ThreadConfiguratorNode(const YAML::Node &yaml)
   : Node("thread_configurator_node"), unapplied_num_(0), cgroup_num_(0) {

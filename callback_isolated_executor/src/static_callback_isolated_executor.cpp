@@ -5,9 +5,9 @@
 #include <sys/syscall.h>
 
 #include "rclcpp/rclcpp.hpp"
-#include "cie_thread_configurator.hpp"
+#include "cie_thread_configurator/cie_thread_configurator.hpp"
 
-#include "static_callback_isolated_executor.hpp"
+#include "callback_isolated_executor/callback_isolated_executor.hpp"
 
 void StaticCallbackIsolatedExecutor::add_node(const rclcpp::Node::SharedPtr &node) {
   node_ = node->get_node_base_interface();

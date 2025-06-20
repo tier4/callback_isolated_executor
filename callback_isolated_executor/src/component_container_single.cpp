@@ -7,7 +7,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_components/component_manager.hpp"
 
-#include "cie_thread_configurator.hpp"
+#include "cie_thread_configurator/cie_thread_configurator.hpp"
 
 int main(int argc, char * argv[])
 {
