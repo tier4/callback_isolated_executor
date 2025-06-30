@@ -1,7 +1,7 @@
 #include "callback_isolated_executor/callback_isolated_executor.hpp"
 #include "cie_sample_application/sample_node.hpp"
 
-int main(int argc, char * argv[]) {
+int main(int argc, char *argv[]) {
   rclcpp::init(argc, argv);
 
   auto node = std::make_shared<SampleNode>();

@@ -2,8 +2,8 @@
 #include <memory>
 #include <string>
 
-#include "yaml-cpp/yaml.h"
 #include "rclcpp/rclcpp.hpp"
+#include "yaml-cpp/yaml.h"
 
 #include "cie_thread_configurator/prerun_node.hpp"
 #include "cie_thread_configurator/thread_configurator_node.hpp"
@@ -36,7 +36,8 @@ static void spin_thread_configurator_node(const std::string &config_filename) {
 
     RCLCPP_INFO(node->get_logger(),
                 "Success: All of the configurations are applied."
-                "\nPress enter to exit and remove cgroups, if there are SCHED_DEADLINE tasks:");
+                "\nPress enter to exit and remove cgroups, if there are "
+                "SCHED_DEADLINE tasks:");
     std::cin.get();
   } else {
     node->print_all_unapplied();
@@ -55,15 +56,15 @@ static void spin_prerun_node() {
   node->dump_yaml_config(std::filesystem::current_path());
 }
 
-int main(int argc, char * argv[])
-{
+int main(int argc, char *argv[]) {
   rclcpp::init(argc, argv);
   std::vector<std::string> args = rclcpp::remove_ros_arguments(argc, argv);
 
   bool prerun_mode = false;
-  for (auto &arg : args) if (arg == "--prerun") {
-    prerun_mode = true;
-  }
+  for (auto &arg : args)
+    if (arg == "--prerun") {
+      prerun_mode = true;
+    }
 
   if (prerun_mode) {
     spin_prerun_node();
@@ -77,7 +78,8 @@ int main(int argc, char * argv[])
         break;
       }
 
-      if (arg == std::string("--config-file")) next = true;
+      if (arg == std::string("--config-file"))
+        next = true;
     }
 
     spin_thread_configurator_node(filename);
