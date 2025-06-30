@@ -4,7 +4,7 @@ This repository continues development from [https://github.com/sykwer/callback_i
 
 
 If you find `CallbackIsolatedExecutor` is useful in your research, please consider citing:
-- T. Ishikawa-Aso, A. Yano, T. Azumi, and S. Kato, “Work in Progress: Middleware-Transparent Callback Enforcement in Commoditized Component-Oriented Real-Time Systems,” in Proc. 2025 IEEE 31st Real-Time and Embedded Technology and Applications Symposium (RTAS), 2025, pp. 426–429.
+- T. Ishikawa-Aso, A. Yano, T. Azumi, and S. Kato, “Work in Progress: Middleware-Transparent Callback Enforcement in Commoditized Component-Oriented Real-Time Systems,” in Proc. of 31st IEEE Real-Time and Embedded Technology and Applications Symposium (RTAS), 2025, pp. 426–429.
 
 <details>
 <summary>BibTeX</summary>
@@ -13,7 +13,7 @@ If you find `CallbackIsolatedExecutor` is useful in your research, please consid
 @inproceedings{ishikawa2025work,
   title={Work in Progress: Middleware-Transparent Callback Enforcement in Commoditized Component-Oriented Real-Time Systems},
   author={Ishikawa-Aso, Takahiro and Yano, Atsushi and Azumi, Takuya and Kato, Shinpei},
-  booktitle={Proceeding of 31st IEEE Real-Time and Embedded Technology and Applications Symposium (RTAS)},
+  booktitle={Proc. of 31st IEEE Real-Time and Embedded Technology and Applications Symposium (RTAS)},
   pages={426--429},
   year={2025},
   organization={IEEE}
