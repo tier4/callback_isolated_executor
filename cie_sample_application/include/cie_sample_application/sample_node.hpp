@@ -5,7 +5,8 @@
 
 class SampleNode : public rclcpp::Node {
 public:
-  explicit SampleNode(const rclcpp::NodeOptions &options = rclcpp::NodeOptions());
+  explicit SampleNode(
+      const rclcpp::NodeOptions &options = rclcpp::NodeOptions());
 
 private:
   void timer_callback();
