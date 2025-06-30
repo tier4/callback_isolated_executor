@@ -53,10 +53,10 @@ jobs:
         rosdep update
         rosdep install -y --from-paths . --ignore-src --rosdistro $ROS_DISTRO
 
-    - name: Build src
+    - name: Build
       if: steps.check_diff_cpp.outputs.cpp_changed == 'true'
       run: |
         source /opt/ros/humble/setup.bash
-        colcon build --cmake-args -DCOVERAGE=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=1
+        colcon build --cmake-args -DCMAKE_EXPORT_COMPILE_COMMANDS=1
     
     # TODO: run tests
