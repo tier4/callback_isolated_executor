@@ -8,6 +8,7 @@
 using namespace std::chrono_literals;
 const long long MESSAGE_SIZE = 1024;
 
+// Dummy
 SampleNode::SampleNode(const rclcpp::NodeOptions &options)
     : Node("sample_node", "/sample_space/sample_subspace", options), count_(0),
       count2_(0) {
