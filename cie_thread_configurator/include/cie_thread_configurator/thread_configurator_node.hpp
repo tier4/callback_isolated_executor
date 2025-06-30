@@ -3,8 +3,8 @@
 #include <string>
 #include <unordered_map>
 
-#include "yaml-cpp/yaml.h"
 #include "rclcpp/rclcpp.hpp"
+#include "yaml-cpp/yaml.h"
 
 #include "cie_config_msgs/msg/callback_group_info.hpp"
 
@@ -33,17 +33,19 @@ public:
   bool apply_deadline_configs();
 
 private:
-  bool set_affinity_by_cgroup(int64_t thread_id, const std::vector<int>& cpus);
+  bool set_affinity_by_cgroup(int64_t thread_id, const std::vector<int> &cpus);
   bool issue_syscalls(const CallbackGroupConfig &config);
-  void topic_callback(const cie_config_msgs::msg::CallbackGroupInfo::SharedPtr msg);
+  void
+  topic_callback(const cie_config_msgs::msg::CallbackGroupInfo::SharedPtr msg);
 
-  rclcpp::Subscription<cie_config_msgs::msg::CallbackGroupInfo>::SharedPtr subscription_;
+  rclcpp::Subscription<cie_config_msgs::msg::CallbackGroupInfo>::SharedPtr
+      subscription_;
 
   std::vector<CallbackGroupConfig> callback_group_configs_;
-  std::unordered_map<std::string, CallbackGroupConfig*> id_to_callback_group_config_;
+  std::unordered_map<std::string, CallbackGroupConfig *>
+      id_to_callback_group_config_;
   int unapplied_num_;
   int cgroup_num_;
 
-  std::vector<CallbackGroupConfig*> deadline_configs_;
+  std::vector<CallbackGroupConfig *> deadline_configs_;
 };
-
