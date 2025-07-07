@@ -30,14 +30,14 @@ ament_target_dependencies(component_container_callback_isolated rclcpp rclcpp_co
 add_executable(component_container_single src/component_container_single.cpp)
 ament_target_dependencies(component_container_single rclcpp rclcpp_components cie_thread_configurator)
 
-add_library(static_callback_isolated_executor SHARED src/static_callback_isolated_executor.cpp)
-ament_target_dependencies(static_callback_isolated_executor rclcpp cie_thread_configurator)
-target_include_directories(static_callback_isolated_executor PUBLIC
+add_library(callback_isolated_executor SHARED src/callback_isolated_executor.cpp)
+ament_target_dependencies(callback_isolated_executor rclcpp cie_thread_configurator)
+target_include_directories(callback_isolated_executor PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
 )
 
-install(TARGETS static_callback_isolated_executor
+install(TARGETS callback_isolated_executor
   EXPORT export_${PROJECT_NAME}
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
