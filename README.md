@@ -99,7 +99,7 @@ ament_target_dependencies(your_executable ... callback_isolated_executor)
 ...
 ```
 ```cpp
-#include "static_callback_isolated_executor.hpp"
+#include "callback_isolated_executor.hpp"
 
 int main(int argc, char * argv[]) {
   rclcpp::init(argc, argv);
