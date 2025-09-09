@@ -21,6 +21,16 @@ If you find `CallbackIsolatedExecutor` is useful in your research, please consid
 ```
 </details>
 
+## Supported Environments
+
+CallbackIsolatedExecutor is currently available in the following environments.
+This reflects the current status, and support is expected to expand in the future.
+
+| Category           | Supported Versions / Notes                                   |
+|--------------------|--------------------------------------------------------------|
+| ROS 2              | Humble (only with `rclcpp` client library)                   |
+| Linux Distribution | Ubuntu 22.04 (Jammy Jellyfish)                               |
+
 ## Build and Install
 ```
 $ git clone https://github.com/tier4/callback_isolated_executor.git
