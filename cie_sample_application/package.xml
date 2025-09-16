@@ -3,9 +3,16 @@
 <package format="3">
   <name>cie_sample_application</name>
   <version>0.0.0</version>
-  <description>TODO: Package description</description>
-  <maintainer email="sykwer@gmail.com">sykwer</maintainer>
-  <license>TODO: License declaration</license>
+  <description>Sample application to demonstrate the use of cie_thread_configurator and callback_isolated_executor.</description>
+
+  <maintainer email="sykwer@gmail.com">Takahiro Ishikawa-Aso</maintainer>
+  <maintainer email="atsushi.yano.2@tier4.jp">Atsushi Yano</maintainer>
+
+  <license>Apache License 2.0</license>
+
+  <!-- Original authors -->
+  <author email="sykwer@gmail.com">Takahiro Ishikawa-Aso</author>
+  <author email="atsushi.yano.2@tier4.jp">Atsushi Yano</author>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
