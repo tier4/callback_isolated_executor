@@ -77,7 +77,7 @@ On Linux, these values are `99` and `1`.
 ```
 
 ### EDF Scheduler
-For threads operating on the FIFO scheduler, you can specify the parameters named `runtime`, `deadline`, and `period`.
+For threads operating on the EDF scheduler, you can specify the parameters named `runtime`, `deadline`, and `period`.
 
 ```yaml
   - id: xxxxx
