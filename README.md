@@ -201,7 +201,7 @@ $ vim your_config.yaml
 ```
 
 For callback groups that do not require configuration, you can either delete the entry entirely or leave it as is because the default values in `template.yaml` are set with default nice values and no affinity settings on the CFS scheduler.
-For the detailed specifications of the configuration file, please refer to https://github.com/tier4callback_isolated_executor/tree/main/cie_thread_configurator#yaml-configuration-file-format.
+For the detailed specifications of the configuration file, please refer to https://github.com/tier4/callback_isolated_executor/tree/main/cie_thread_configurator#yaml-configuration-file-format.
 
 ### Step5: Launch your app with scheduler configuration
 To launch the target ROS 2 application with the scheduler settings applied from the your_config.yaml you created, first start the configurator node with the following command.
