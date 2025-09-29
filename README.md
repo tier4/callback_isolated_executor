@@ -88,7 +88,7 @@ $ sudo reboot
 ### Step1: Rewrite your app
 When running a node within `ComponentContainerCallbackIsolated`, you don't need to modify the node's implementation.
 However, if starting the node directly from the main function without using ComponentContainer, you need to modify the node's implementation as shown below and rebuild it.
-Refer to the source code in the [cie_sample_application](https://github.com/sykwer/callback_isolated_executor/tree/main/cie_sample_application) package to understand how to modify your app.
+Refer to the source code in the [cie_sample_application](https://github.com/tier4/callback_isolated_executor/tree/main/cie_sample_application) package to understand how to modify your app.
 
 #### Option1: Launch without ComponentContainer
 If you are launching a node directly from the main function without using a ComponentContainer, change the name of the Executor.
@@ -162,7 +162,8 @@ $ ros2 run cie_thread_configurator thread_configurator_node --prerun
 Then launch your ROS 2 application in another terminal window, after which you can see log messages like shown below in the `prerun` node window.
 Each entry corresponds to the callback group ID and its OS thread ID.
 
-![Screenshot from 2024-05-09 14-03-37](https://github.com/sykwer/callback_isolated_executor/assets/18254663/441528a5-b822-48b1-b334-4ca893041acc)
+<img width="1198" height="201" alt="cie_image0" src="https://github.com/user-attachments/assets/b50374e8-f8c9-4533-bb7e-1343e4031844" />
+
 
 Once all the nodes of the target application are up and the logs in the prerun node window have stopped, press Control+C in the prerun node window.
 Then, in the current directory, a template for the YAML configuration file `template.yaml` will be created in the format like below.
@@ -200,7 +201,7 @@ $ vim your_config.yaml
 ```
 
 For callback groups that do not require configuration, you can either delete the entry entirely or leave it as is because the default values in `template.yaml` are set with default nice values and no affinity settings on the CFS scheduler.
-For the detailed specifications of the configuration file, please refer to https://github.com/sykwer/callback_isolated_executor/tree/main/cie_thread_configurator#yaml-configuration-file-format.
+For the detailed specifications of the configuration file, please refer to https://github.com/tier4/callback_isolated_executor/tree/main/cie_thread_configurator#yaml-configuration-file-format.
 
 ### Step5: Launch your app with scheduler configuration
 To launch the target ROS 2 application with the scheduler settings applied from the your_config.yaml you created, first start the configurator node with the following command.
@@ -219,12 +220,12 @@ $ sudo bash -c "export ROS_DOMAIN_ID=[app domain id]; source /path/to/callback_i
 
 Immediately after launching the configurator node, it will print the settings and then wait for the target ROS 2 application to start running as follows.
 
-![Screenshot from 2024-05-10 10-07-24](https://github.com/sykwer/callback_isolated_executor/assets/18254663/05b61107-fb2b-434b-befc-2cd98bffee1c)
+<img width="1292" height="366" alt="cie_image1" src="https://github.com/user-attachments/assets/537034e0-167d-40dd-83ad-72c6efba7af8" />
 
 In this state, when you launch the target ROS 2 application, the configurator node's window will display the message `Apply sched deadline?` and wait as below.
 The entries above the waiting message each show the callback group ID and OS thread ID information received from the ROS 2 application.
 
-![Screenshot from 2024-05-10 10-37-33](https://github.com/sykwer/callback_isolated_executor/assets/18254663/16dac6b4-acf0-4e00-bca2-096a10cbd5d1)
+<img width="1346" height="160" alt="cie_image2" src="https://github.com/user-attachments/assets/934ab8d5-4894-4549-aa57-d9e7ef8f22c9" />
 
 At this stage, settings with policies other than `SCHED_DEADLINE` have already been applied, while the application of settings including the `SCHED_DEADLINE` policy is postponed.
 To apply settings that include the `SCHED_DEADLINE` policy, press the enter key in the window where `Apply sched deadline?` is displayed.
@@ -245,7 +246,7 @@ Therefore, applying the `SCHED_DEADLINE` policy after the system has started, su
 You need to apply the `SCHED_DEADLINE` policy only after the system has fully started up and no further creation of new child threads is expected.
 </details>
 
-![Screenshot from 2024-05-10 10-52-47](https://github.com/sykwer/callback_isolated_executor/assets/18254663/aad2151d-1ff8-496c-9fdf-c4ada7e22a76)
+<img width="1348" height="223" alt="cie_image3" src="https://github.com/user-attachments/assets/0ce5f16c-af94-4d0e-976d-a09604c14367" />
 
 While the target ROS 2 application is running, the configurator node's window should not be closed and must remain open.
 After the execution of the target ROS 2 application has ended, press the enter key in the window displaying `Press enter to exit and remove cgroups...`.
