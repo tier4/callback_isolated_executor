@@ -70,7 +70,7 @@ static void spin_thread_configurator_node(const std::string &config_filename) {
               << std::endl;
   }
 
-  std::cout << config << std::endl;
+  std::cout << config["callback_groups"] << std::endl;
 
   auto node = std::make_shared<ThreadConfiguratorNode>(config);
   auto executor = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
