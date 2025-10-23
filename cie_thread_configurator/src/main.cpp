@@ -16,72 +16,20 @@ static bool validate_hardware_info(const YAML::Node &yaml) {
   bool all_match = true;
   std::vector<std::string> mismatches;
 
-  // Check each hardware field
-  if (yaml_hw_info["model_name"]) {
-    std::string yaml_value = yaml_hw_info["model_name"].as<std::string>();
-    if (current_hw_info["model_name"] != yaml_value) {
+  for (const auto &[key, current_value] : current_hw_info) {
+    if (!yaml_hw_info[key]) {
+      continue;
+    }
+
+    std::string yaml_value = yaml_hw_info[key].as<std::string>();
+    if (yaml_value != current_value) {
       all_match = false;
-      mismatches.push_back("Model name: expected '" + yaml_value + "', got '" +
-                           current_hw_info["model_name"] + "'");
+      mismatches.push_back(key + ": expected '" + yaml_value + "', got '" +
+                           current_value + "'");
     }
   }
 
-  if (yaml_hw_info["cpu_family"]) {
-    std::string yaml_value = yaml_hw_info["cpu_family"].as<std::string>();
-    if (current_hw_info["cpu_family"] != yaml_value) {
-      all_match = false;
-      mismatches.push_back("CPU family: expected '" + yaml_value + "', got '" +
-                           current_hw_info["cpu_family"] + "'");
-    }
-  }
-
-  if (yaml_hw_info["model"]) {
-    std::string yaml_value = yaml_hw_info["model"].as<std::string>();
-    if (current_hw_info["model"] != yaml_value) {
-      all_match = false;
-      mismatches.push_back("Model: expected '" + yaml_value + "', got '" +
-                           current_hw_info["model"] + "'");
-    }
-  }
-
-  if (yaml_hw_info["threads_per_core"]) {
-    std::string yaml_value = yaml_hw_info["threads_per_core"].as<std::string>();
-    if (current_hw_info["threads_per_core"] != yaml_value) {
-      all_match = false;
-      mismatches.push_back("Threads per core: expected '" + yaml_value +
-                           "', got '" + current_hw_info["threads_per_core"] +
-                           "'");
-    }
-  }
-
-  if (yaml_hw_info["frequency_boost"]) {
-    std::string yaml_value = yaml_hw_info["frequency_boost"].as<std::string>();
-    if (current_hw_info["frequency_boost"] != yaml_value) {
-      std::cout << "[WARN] Frequency boost setting differs: expected '"
-                << yaml_value << "', got '"
-                << current_hw_info["frequency_boost"] << "'" << std::endl;
-    }
-  }
-
-  if (yaml_hw_info["cpu_max_mhz"]) {
-    std::string yaml_value = yaml_hw_info["cpu_max_mhz"].as<std::string>();
-    if (current_hw_info["cpu_max_mhz"] != yaml_value) {
-      std::cout << "[WARN] CPU max MHz differs: expected '" << yaml_value
-                << "', got '" << current_hw_info["cpu_max_mhz"] << "'"
-                << std::endl;
-    }
-  }
-
-  if (yaml_hw_info["cpu_min_mhz"]) {
-    std::string yaml_value = yaml_hw_info["cpu_min_mhz"].as<std::string>();
-    if (current_hw_info["cpu_min_mhz"] != yaml_value) {
-      std::cout << "[WARN] CPU min MHz differs: expected '" << yaml_value
-                << "', got '" << current_hw_info["cpu_min_mhz"] << "'"
-                << std::endl;
-    }
-  }
-
-  // Report mismatches
+  // Report results
   if (!all_match) {
     std::cerr << "[ERROR] Hardware validation failed with the following "
                  "mismatches:"
