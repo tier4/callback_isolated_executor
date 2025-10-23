@@ -5,19 +5,124 @@
 #include "rclcpp/rclcpp.hpp"
 #include "yaml-cpp/yaml.h"
 
+#include "cie_thread_configurator/cie_thread_configurator.hpp"
 #include "cie_thread_configurator/prerun_node.hpp"
 #include "cie_thread_configurator/thread_configurator_node.hpp"
+
+static bool validate_hardware_info(const YAML::Node &yaml) {
+  YAML::Node yaml_hw_info = yaml["hardware_info"];
+  auto current_hw_info = cie_thread_configurator::get_hardware_info();
+
+  bool all_match = true;
+  std::vector<std::string> mismatches;
+
+  // Check each hardware field
+  if (yaml_hw_info["model_name"]) {
+    std::string yaml_value = yaml_hw_info["model_name"].as<std::string>();
+    if (current_hw_info["model_name"] != yaml_value) {
+      all_match = false;
+      mismatches.push_back("Model name: expected '" + yaml_value + "', got '" +
+                           current_hw_info["model_name"] + "'");
+    }
+  }
+
+  if (yaml_hw_info["cpu_family"]) {
+    std::string yaml_value = yaml_hw_info["cpu_family"].as<std::string>();
+    if (current_hw_info["cpu_family"] != yaml_value) {
+      all_match = false;
+      mismatches.push_back("CPU family: expected '" + yaml_value + "', got '" +
+                           current_hw_info["cpu_family"] + "'");
+    }
+  }
+
+  if (yaml_hw_info["model"]) {
+    std::string yaml_value = yaml_hw_info["model"].as<std::string>();
+    if (current_hw_info["model"] != yaml_value) {
+      all_match = false;
+      mismatches.push_back("Model: expected '" + yaml_value + "', got '" +
+                           current_hw_info["model"] + "'");
+    }
+  }
+
+  if (yaml_hw_info["threads_per_core"]) {
+    std::string yaml_value = yaml_hw_info["threads_per_core"].as<std::string>();
+    if (current_hw_info["threads_per_core"] != yaml_value) {
+      all_match = false;
+      mismatches.push_back("Threads per core: expected '" + yaml_value +
+                           "', got '" + current_hw_info["threads_per_core"] +
+                           "'");
+    }
+  }
+
+  if (yaml_hw_info["frequency_boost"]) {
+    std::string yaml_value = yaml_hw_info["frequency_boost"].as<std::string>();
+    if (current_hw_info["frequency_boost"] != yaml_value) {
+      std::cout << "[WARN] Frequency boost setting differs: expected '"
+                << yaml_value << "', got '"
+                << current_hw_info["frequency_boost"] << "'" << std::endl;
+    }
+  }
+
+  if (yaml_hw_info["cpu_max_mhz"]) {
+    std::string yaml_value = yaml_hw_info["cpu_max_mhz"].as<std::string>();
+    if (current_hw_info["cpu_max_mhz"] != yaml_value) {
+      std::cout << "[WARN] CPU max MHz differs: expected '" << yaml_value
+                << "', got '" << current_hw_info["cpu_max_mhz"] << "'"
+                << std::endl;
+    }
+  }
+
+  if (yaml_hw_info["cpu_min_mhz"]) {
+    std::string yaml_value = yaml_hw_info["cpu_min_mhz"].as<std::string>();
+    if (current_hw_info["cpu_min_mhz"] != yaml_value) {
+      std::cout << "[WARN] CPU min MHz differs: expected '" << yaml_value
+                << "', got '" << current_hw_info["cpu_min_mhz"] << "'"
+                << std::endl;
+    }
+  }
+
+  // Report mismatches
+  if (!all_match) {
+    std::cerr << "[ERROR] Hardware validation failed with the following "
+                 "mismatches:"
+              << std::endl;
+    for (const auto &mismatch : mismatches) {
+      std::cerr << "  - " << mismatch << std::endl;
+    }
+  } else {
+    std::cout << "[INFO] Hardware validation successful. Configuration matches "
+                 "this system."
+              << std::endl;
+  }
+
+  return all_match;
+}
 
 static void spin_thread_configurator_node(const std::string &config_filename) {
   YAML::Node config;
 
   try {
     config = YAML::LoadFile(config_filename);
-    std::cout << config << std::endl;
   } catch (const std::exception &e) {
     std::cerr << "Error reading the YAML file: " << e.what() << std::endl;
     return;
   }
+
+  // Validate hardware information if present in YAML
+  if (config["hardware_info"]) {
+    if (!validate_hardware_info(config)) {
+      std::cerr << "[ERROR] Hardware information validation failed. The "
+                   "configuration may not match this system."
+                << std::endl;
+      return;
+    }
+  } else {
+    std::cout << "[WARN] No hardware_info section found in configuration file. "
+                 "Skipping hardware validation."
+              << std::endl;
+  }
+
+  std::cout << config << std::endl;
 
   auto node = std::make_shared<ThreadConfiguratorNode>(config);
   auto executor = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
