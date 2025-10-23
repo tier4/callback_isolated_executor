@@ -43,11 +43,7 @@ std::string create_callback_group_id(
     ss << "Timer(" << period << ")@";
   };
 
-  auto waitable_func = [&ss](const rclcpp::Waitable::SharedPtr &waitable) {
-    (void)waitable;
-    ss << "Waitable"
-       << "@";
-  };
+  auto waitable_func = [](auto &&) {};
 
   group->collect_all_ptrs(sub_func, service_func, client_func, timer_func,
                           waitable_func);
