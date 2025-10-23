@@ -40,28 +40,8 @@ void PrerunNode::dump_yaml_config(std::filesystem::path path) {
 
   auto hw_info = cie_thread_configurator::get_hardware_info();
 
-  if (hw_info.find("model_name") != hw_info.end()) {
-    out << YAML::Key << "model_name" << YAML::Value << hw_info["model_name"];
-  }
-  if (hw_info.find("cpu_family") != hw_info.end()) {
-    out << YAML::Key << "cpu_family" << YAML::Value << hw_info["cpu_family"];
-  }
-  if (hw_info.find("model") != hw_info.end()) {
-    out << YAML::Key << "model" << YAML::Value << hw_info["model"];
-  }
-  if (hw_info.find("threads_per_core") != hw_info.end()) {
-    out << YAML::Key << "threads_per_core" << YAML::Value
-        << hw_info["threads_per_core"];
-  }
-  if (hw_info.find("frequency_boost") != hw_info.end()) {
-    out << YAML::Key << "frequency_boost" << YAML::Value
-        << hw_info["frequency_boost"];
-  }
-  if (hw_info.find("cpu_max_mhz") != hw_info.end()) {
-    out << YAML::Key << "cpu_max_mhz" << YAML::Value << hw_info["cpu_max_mhz"];
-  }
-  if (hw_info.find("cpu_min_mhz") != hw_info.end()) {
-    out << YAML::Key << "cpu_min_mhz" << YAML::Value << hw_info["cpu_min_mhz"];
+  for (const auto &[key, value] : hw_info) {
+    out << YAML::Key << key << YAML::Value << value;
   }
 
   out << YAML::EndMap;
