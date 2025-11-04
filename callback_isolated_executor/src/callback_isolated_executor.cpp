@@ -62,7 +62,7 @@ void CallbackIsolatedExecutor::spin() {
     auto callback_group_id =
         cie_thread_configurator::create_callback_group_id(group, node);
 
-    threads.emplace_back([executor, &callback_group_id, &client_publisher,
+    threads.emplace_back([executor, callback_group_id, &client_publisher,
                           &client_publisher_mutex]() {
       auto tid = static_cast<pid_t>(syscall(SYS_gettid));
 
