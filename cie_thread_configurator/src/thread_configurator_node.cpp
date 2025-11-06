@@ -243,3 +243,7 @@ bool ThreadConfiguratorNode::apply_deadline_configs() {
 
   return true;
 }
+
+bool ThreadConfiguratorNode::exist_deadline_config() {
+  return !deadline_configs_.empty();
+}

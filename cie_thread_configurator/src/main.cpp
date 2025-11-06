@@ -29,16 +29,18 @@ static void spin_thread_configurator_node(const std::string &config_filename) {
   }
 
   if (node->all_applied()) {
-    RCLCPP_INFO(node->get_logger(), "Apply sched deadline?");
-    std::cin.get();
+    if (node->exist_deadline_config()) {
+      RCLCPP_INFO(node->get_logger(), "Apply sched deadline?");
+      std::cin.get();
 
-    node->apply_deadline_configs();
+      node->apply_deadline_configs();
 
-    RCLCPP_INFO(node->get_logger(),
-                "Success: All of the configurations are applied."
-                "\nPress enter to exit and remove cgroups, if there are "
-                "SCHED_DEADLINE tasks:");
-    std::cin.get();
+      RCLCPP_INFO(node->get_logger(),
+                  "Success: All of the configurations are applied."
+                  "\nPress enter to exit and remove cgroups, if there are "
+                  "SCHED_DEADLINE tasks:");
+      std::cin.get();
+    }
   } else {
     node->print_all_unapplied();
   }
