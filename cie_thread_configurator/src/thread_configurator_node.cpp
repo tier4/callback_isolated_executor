@@ -21,11 +21,28 @@ ThreadConfiguratorNode::ThreadConfiguratorNode(const YAML::Node &yaml)
   unapplied_num_ = callback_groups.size();
   callback_group_configs_.resize(callback_groups.size());
 
+  // For backward compatibility: remove trailing "Waitable@"s
+  auto remove_trailing_waitable = [](std::string s) {
+    static constexpr std::string_view suffix = "@Waitable";
+    const std::size_t suffix_size = suffix.size();
+    std::size_t s_size = s.size();
+
+    while (s_size >= suffix_size &&
+           std::char_traits<char>::compare(s.data() + (s_size - suffix_size),
+                                           suffix.data(), suffix_size) == 0) {
+      s_size -= suffix_size;
+    }
+    s.resize(s_size);
+
+    return s;
+  };
+
   for (size_t i = 0; i < callback_groups.size(); i++) {
     const auto &callback_group = callback_groups[i];
     auto &config = callback_group_configs_[i];
 
-    config.callback_group_id = callback_group["id"].as<std::string>();
+    config.callback_group_id =
+        remove_trailing_waitable(callback_group["id"].as<std::string>());
     for (auto &cpu : callback_group["affinity"])
       config.affinity.push_back(cpu.as<int>());
     config.policy = callback_group["policy"].as<std::string>();
