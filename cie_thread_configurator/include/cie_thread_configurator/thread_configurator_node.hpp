@@ -30,6 +30,7 @@ public:
   bool all_applied();
   void print_all_unapplied();
 
+  bool exist_deadline_config();
   bool apply_deadline_configs();
 
 private:
