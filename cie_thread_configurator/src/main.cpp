@@ -5,19 +5,72 @@
 #include "rclcpp/rclcpp.hpp"
 #include "yaml-cpp/yaml.h"
 
+#include "cie_thread_configurator/cie_thread_configurator.hpp"
 #include "cie_thread_configurator/prerun_node.hpp"
 #include "cie_thread_configurator/thread_configurator_node.hpp"
+
+static bool validate_hardware_info(const YAML::Node &yaml) {
+  YAML::Node yaml_hw_info = yaml["hardware_info"];
+  auto current_hw_info = cie_thread_configurator::get_hardware_info();
+
+  bool all_match = true;
+  std::vector<std::string> mismatches;
+
+  for (const auto &[key, current_value] : current_hw_info) {
+    if (!yaml_hw_info[key]) {
+      continue;
+    }
+
+    std::string yaml_value = yaml_hw_info[key].as<std::string>();
+    if (yaml_value != current_value) {
+      all_match = false;
+      mismatches.push_back(key + ": expected '" + yaml_value + "', got '" +
+                           current_value + "'");
+    }
+  }
+
+  // Report results
+  if (!all_match) {
+    std::cerr << "[ERROR] Hardware validation failed with the following "
+                 "mismatches:"
+              << std::endl;
+    for (const auto &mismatch : mismatches) {
+      std::cerr << "  - " << mismatch << std::endl;
+    }
+  } else {
+    std::cout << "[INFO] Hardware validation successful. Configuration matches "
+                 "this system."
+              << std::endl;
+  }
+
+  return all_match;
+}
 
 static void spin_thread_configurator_node(const std::string &config_filename) {
   YAML::Node config;
 
   try {
     config = YAML::LoadFile(config_filename);
-    std::cout << config << std::endl;
   } catch (const std::exception &e) {
     std::cerr << "Error reading the YAML file: " << e.what() << std::endl;
     return;
   }
+
+  // Validate hardware information if present in YAML
+  if (config["hardware_info"]) {
+    if (!validate_hardware_info(config)) {
+      std::cerr << "[ERROR] Hardware information validation failed. The "
+                   "configuration may not match this system."
+                << std::endl;
+      return;
+    }
+  } else {
+    std::cout << "[WARN] No hardware_info section found in configuration file. "
+                 "Skipping hardware validation."
+              << std::endl;
+  }
+
+  std::cout << config["callback_groups"] << std::endl;
 
   auto node = std::make_shared<ThreadConfiguratorNode>(config);
   auto executor = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();

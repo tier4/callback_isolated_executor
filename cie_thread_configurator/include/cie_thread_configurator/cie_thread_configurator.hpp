@@ -1,6 +1,7 @@
 #pragma once
 
 #include "rclcpp/rclcpp.hpp"
+#include <map>
 #include <memory>
 #include <string>
 
@@ -25,5 +26,8 @@ void publish_callback_group_info(
     const rclcpp::Publisher<cie_config_msgs::msg::CallbackGroupInfo>::SharedPtr
         &publisher,
     int64_t tid, const std::string &callback_group_id);
+
+// Get hardware information from lscpu command
+std::map<std::string, std::string> get_hardware_info();
 
 } // namespace cie_thread_configurator

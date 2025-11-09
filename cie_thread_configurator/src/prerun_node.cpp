@@ -7,6 +7,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include "yaml-cpp/yaml.h"
 
+#include "cie_thread_configurator/cie_thread_configurator.hpp"
 #include "cie_thread_configurator/prerun_node.hpp"
 
 PrerunNode::PrerunNode() : Node("prerun_node") {
@@ -32,6 +33,20 @@ void PrerunNode::dump_yaml_config(std::filesystem::path path) {
   YAML::Emitter out;
 
   out << YAML::BeginMap;
+
+  // Add hardware information section
+  out << YAML::Key << "hardware_info";
+  out << YAML::Value << YAML::BeginMap;
+
+  auto hw_info = cie_thread_configurator::get_hardware_info();
+
+  for (const auto &[key, value] : hw_info) {
+    out << YAML::Key << key << YAML::Value << value;
+  }
+
+  out << YAML::EndMap;
+
+  // Add callback_groups section
   out << YAML::Key << "callback_groups";
   out << YAML::Value << YAML::BeginSeq;
 
