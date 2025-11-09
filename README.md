@@ -26,10 +26,10 @@ If you find `CallbackIsolatedExecutor` is useful in your research, please consid
 CallbackIsolatedExecutor is currently available in the following environments.
 This reflects the current status, and support is expected to expand in the future.
 
-| Category           | Supported Versions / Notes                                   |
-|--------------------|--------------------------------------------------------------|
-| ROS 2              | Humble (only with `rclcpp` client library)                   |
-| Linux Distribution | Ubuntu 22.04 (Jammy Jellyfish)                               |
+| Category           | Supported Versions / Notes                 |
+| ------------------ | ------------------------------------------ |
+| ROS 2              | Humble (only with `rclcpp` client library) |
+| Linux Distribution | Ubuntu 22.04 (Jammy Jellyfish)             |
 
 ## Build and Install
 ```
@@ -169,13 +169,22 @@ Once all the nodes of the target application are up and the logs in the prerun n
 Then, in the current directory, a template for the YAML configuration file `template.yaml` will be created in the format like below.
 
 ```yaml
+hardware_info:
+  model_name: Intel(R) Xeon(R) Silver 4216 CPU @ 2.10GHz
+  cpu_family: 5
+  model: 85
+  threads_per_core: 2
+  frequency_boost: enabled
+  cpu_max_mhz: 2101.0000
+  cpu_min_mhz: 800.0000
+
 callback_groups:
-  - id: /sample_node@Subscription(/parameter_events)@Service(/sample_node/get_parameters)@Service(/sample_node/get_parameter_types)@Service(/sample_node/set_parameters)@Service(/sample_node/set_parameters_atomically)@Service(/sample_node/describe_parameters)@Service(/sample_node/list_parameters)@Waitable@Waitable@Waitable@Waitable
+  - id: /sample_node@Subscription(/parameter_events)@Service(/sample_node/get_parameters)@Service(/sample_node/get_parameter_types)@Service(/sample_node/set_parameters)@Service(/sample_node/set_parameters_atomically)@Service(/sample_node/describe_parameters)@Service(/sample_node/list_parameters)
     affinity: ~
     policy: SCHED_OTHER
     priority: 0
 
-  - id: /sample_node@Subscription(/topic_in)@Waitable
+  - id: /sample_node@Subscription(/topic_in)
     affinity: ~
     policy: SCHED_OTHER
     priority: 0
@@ -192,6 +201,8 @@ callback_groups:
 ```
 
 Once the creation of template.yaml is complete, please also terminate the target ROS 2 application.
+
+The `template.yaml` file includes captured hardware information from the system (CPU details retrieved via `lscpu`). This information will be used for validation when loading the configuration file to ensure compatibility with the target system.
 
 ### Step4: Edit yaml file for scheduler configuration
 Change the file name and edit to configure each callback group.
@@ -218,12 +229,21 @@ Note that if the target ROS 2 application is operating with a specific ROS_DOMAI
 $ sudo bash -c "export ROS_DOMAIN_ID=[app domain id]; source /path/to/callback_isolated_executor/install/setup.bash; ros2 run cie_thread_configurator thread_configurator_node --config-file your_config.yaml"
 ```
 
-Immediately after launching the configurator node, it will print the settings and then wait for the target ROS 2 application to start running as follows.
+Immediately after launching the configurator node, it will validate the hardware configuration. The configurator compares the hardware information stored in the configuration file against the current system's hardware details. If there are any mismatches (such as different CPU family or model), the configurator will report an error like:
+```
+[ERROR] Hardware validation failed with the following mismatches:
+  - CPU family: expected '5', got '6'
+```
+This validation ensures that the scheduler configuration is applied only on compatible hardware to prevent potential performance or stability issues.
+
+After successful validation, the configurator will print the settings and then wait for the target ROS 2 application to start running as follows.
 
 <img width="1292" height="366" alt="cie_image1" src="https://github.com/user-attachments/assets/537034e0-167d-40dd-83ad-72c6efba7af8" />
 
-In this state, when you launch the target ROS 2 application, the configurator node's window will display the message `Apply sched deadline?` and wait as below.
-The entries above the waiting message each show the callback group ID and OS thread ID information received from the ROS 2 application.
+In this state, when you launch the target ROS 2 application, the configurator node will receive callback group information from the application.
+The entries in the configurator window show the callback group ID and OS thread ID information received from the ROS 2 application.
+
+If your configuration file contains callback groups with the `SCHED_DEADLINE` policy, the configurator node's window will display the message `Apply sched deadline?` and wait as shown below. If no `SCHED_DEADLINE` configurations are present, this prompt will be skipped automatically.
 
 <img width="1346" height="160" alt="cie_image2" src="https://github.com/user-attachments/assets/934ab8d5-4894-4549-aa57-d9e7ef8f22c9" />
 
