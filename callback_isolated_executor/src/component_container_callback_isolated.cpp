@@ -51,6 +51,7 @@ private:
       node_id_to_executor_wrappers_;
   rclcpp::Publisher<cie_config_msgs::msg::CallbackGroupInfo>::SharedPtr
       client_publisher_;
+  std::mutex client_publisher_mutex_;
 };
 
 ComponentManagerCallbackIsolated::~ComponentManagerCallbackIsolated() {
@@ -141,11 +142,10 @@ void ComponentManagerCallbackIsolated::add_node_to_executor(uint64_t node_id) {
         std::thread([&executor_wrapper, group_id, this]() {
           auto tid = syscall(SYS_gettid);
 
-          // dirty
-          for (int i = 0; i < 3; i++) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+          {
+            std::lock_guard<std::mutex> lock(this->client_publisher_mutex_);
             cie_thread_configurator::publish_callback_group_info(
-                this->client_publisher_, tid, group_id);
+              this->client_publisher_, tid, group_id);
           }
 
           executor_wrapper.thread_initialized = true;
