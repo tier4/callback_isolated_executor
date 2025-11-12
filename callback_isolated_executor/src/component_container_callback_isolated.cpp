@@ -145,7 +145,7 @@ void ComponentManagerCallbackIsolated::add_node_to_executor(uint64_t node_id) {
           {
             std::lock_guard<std::mutex> lock(this->client_publisher_mutex_);
             cie_thread_configurator::publish_callback_group_info(
-              this->client_publisher_, tid, group_id);
+                this->client_publisher_, tid, group_id);
           }
 
           executor_wrapper.thread_initialized = true;
