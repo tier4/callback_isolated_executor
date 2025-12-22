@@ -13,10 +13,8 @@ class MultiThreadedExecutorInternal : public rclcpp::Executor {
   // Thread management
   std::vector<std::thread> threads_;
   std::vector<pid_t> tids_; // guarded by mtx_
-  size_t ready_count_{
-      0}; // guarded by mtx_ (the number of threads that saved their TID)
-  bool start_allowed_{
-      false}; // guarded by mtx_ (spin() allowed run() to proceed or not)
+  size_t ready_count_{0}; // guarded by mtx_ (# of threads that saved TID)
+  bool start_allowed_{false}; // guarded by mtx_ (run() allowed to proceed)
 
   // Synchronization in start phase
   std::mutex mtx_;
