@@ -5,7 +5,8 @@
 
 class ReentrantNode : public rclcpp::Node {
 public:
-  explicit ReentrantNode(const rclcpp::NodeOptions &options = rclcpp::NodeOptions());
+  explicit ReentrantNode(
+      const rclcpp::NodeOptions &options = rclcpp::NodeOptions());
 
 private:
   void timer_callback_1();

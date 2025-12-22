@@ -13,8 +13,8 @@
 CallbackIsolatedExecutor::CallbackIsolatedExecutor(
     const rclcpp::ExecutorOptions &options)
     : rclcpp::Executor(options) {
-      client_publisher_ = cie_thread_configurator::create_client_publisher();
-    }
+  client_publisher_ = cie_thread_configurator::create_client_publisher();
+}
 
 void CallbackIsolatedExecutor::spin() {
   std::vector<std::thread> threads;
@@ -56,10 +56,11 @@ void CallbackIsolatedExecutor::spin() {
   } // guard mutex_
 
   for (auto [group, node] : groups_and_nodes) {
-    if (group->type() == rclcpp::CallbackGroupType::Reentrant && reentrant_parallelism_ >= 2) {
+    if (group->type() == rclcpp::CallbackGroupType::Reentrant &&
+        reentrant_parallelism_ >= 2) {
       threads.emplace_back(
-          &CallbackIsolatedExecutor::spin_reentrant_callback_group, this,
-          group, node);
+          &CallbackIsolatedExecutor::spin_reentrant_callback_group, this, group,
+          node);
     } else {
       threads.emplace_back(
           &CallbackIsolatedExecutor::spin_mutually_exclusive_callback_group,
@@ -78,13 +79,13 @@ void CallbackIsolatedExecutor::spin_mutually_exclusive_callback_group(
   auto executor = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
   executor->add_callback_group(group, node);
   auto callback_group_id =
-        cie_thread_configurator::create_callback_group_id(group, node);
+      cie_thread_configurator::create_callback_group_id(group, node);
   auto tid = static_cast<pid_t>(syscall(SYS_gettid));
 
   {
     std::lock_guard<std::mutex> lock{client_publisher_mutex_};
-    cie_thread_configurator::publish_callback_group_info(
-        client_publisher_, tid, callback_group_id);
+    cie_thread_configurator::publish_callback_group_info(client_publisher_, tid,
+                                                         callback_group_id);
   }
 
   executor->spin();
@@ -97,7 +98,7 @@ void CallbackIsolatedExecutor::spin_reentrant_callback_group(
       std::make_shared<MultiThreadedExecutorInternal>(reentrant_parallelism_);
   executor->add_callback_group(group, node);
   auto callback_group_id =
-        cie_thread_configurator::create_callback_group_id(group, node);
+      cie_thread_configurator::create_callback_group_id(group, node);
 
   executor->pre_spin();
   auto tids = executor->get_thread_ids();

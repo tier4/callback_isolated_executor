@@ -1,13 +1,14 @@
 #pragma once
 
-#include "rclcpp/rclcpp.hpp"
 #include "cie_config_msgs/msg/callback_group_info.hpp"
+#include "rclcpp/rclcpp.hpp"
 
 class CallbackIsolatedExecutor : public rclcpp::Executor {
   RCLCPP_DISABLE_COPY(CallbackIsolatedExecutor)
 
   std::mutex client_publisher_mutex_;
-  rclcpp::Publisher<cie_config_msgs::msg::CallbackGroupInfo>::SharedPtr client_publisher_;
+  rclcpp::Publisher<cie_config_msgs::msg::CallbackGroupInfo>::SharedPtr
+      client_publisher_;
   size_t reentrant_parallelism_{4};
 
   // Nodes associated with this CallbackIsolatedExecutor, appended by add_node()
