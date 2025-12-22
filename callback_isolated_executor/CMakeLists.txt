@@ -30,8 +30,8 @@ ament_target_dependencies(component_container_callback_isolated rclcpp rclcpp_co
 add_executable(component_container_single src/component_container_single.cpp)
 ament_target_dependencies(component_container_single rclcpp rclcpp_components cie_thread_configurator)
 
-add_library(callback_isolated_executor SHARED src/callback_isolated_executor.cpp)
-ament_target_dependencies(callback_isolated_executor rclcpp cie_thread_configurator)
+add_library(callback_isolated_executor SHARED src/callback_isolated_executor.cpp src/multi_threaded_executor_internal.cpp)
+ament_target_dependencies(callback_isolated_executor rclcpp cie_thread_configurator cie_config_msgs)
 target_include_directories(callback_isolated_executor PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
