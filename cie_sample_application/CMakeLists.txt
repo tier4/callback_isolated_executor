@@ -11,6 +11,7 @@ find_package(rclcpp_components REQUIRED)
 find_package(std_msgs REQUIRED)
 
 find_package(callback_isolated_executor REQUIRED)
+find_package(cie_thread_configurator REQUIRED)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -26,7 +27,7 @@ endif()
 include_directories(include)
 
 add_library(sample_node SHARED src/sample_node.cpp)
-ament_target_dependencies(sample_node rclcpp rclcpp_components std_msgs)
+ament_target_dependencies(sample_node rclcpp rclcpp_components std_msgs cie_thread_configurator)
 rclcpp_components_register_nodes(sample_node "SampleNode")
 
 add_executable(sample_node_main src/sample_node_main.cpp)

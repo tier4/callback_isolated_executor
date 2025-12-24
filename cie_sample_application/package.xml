@@ -24,6 +24,7 @@
   <depend>std_msgs</depend>
 
   <depend>callback_isolated_executor</depend>
+  <depend>cie_thread_configurator</depend>
 
   <export>
     <build_type>ament_cmake</build_type>
