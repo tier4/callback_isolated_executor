@@ -4,6 +4,7 @@
 #include <string>
 
 #include "cie_config_msgs/msg/callback_group_info.hpp"
+#include "cie_config_msgs/msg/non_ros_thread_info.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "yaml-cpp/yaml.h"
 
@@ -14,10 +15,17 @@ PrerunNode::PrerunNode() : Node("prerun_node") {
   subscription_ =
       this->create_subscription<cie_config_msgs::msg::CallbackGroupInfo>(
           "/cie_thread_configurator/callback_group_info", 100,
-          std::bind(&PrerunNode::topic_callback, this, std::placeholders::_1));
+          std::bind(&PrerunNode::callback_group_callback, this,
+                    std::placeholders::_1));
+
+  non_ros_thread_subscription_ =
+      this->create_subscription<cie_config_msgs::msg::NonRosThreadInfo>(
+          "/cie_thread_configurator/non_ros_thread_info", 100,
+          std::bind(&PrerunNode::non_ros_thread_callback, this,
+                    std::placeholders::_1));
 }
 
-void PrerunNode::topic_callback(
+void PrerunNode::callback_group_callback(
     const cie_config_msgs::msg::CallbackGroupInfo::SharedPtr msg) {
   if (callback_group_ids_.find(msg->callback_group_id) !=
       callback_group_ids_.end()) {
@@ -31,6 +39,22 @@ void PrerunNode::topic_callback(
               msg->thread_id, msg->callback_group_id.c_str());
 
   callback_group_ids_.insert(msg->callback_group_id);
+}
+
+void PrerunNode::non_ros_thread_callback(
+    const cie_config_msgs::msg::NonRosThreadInfo::SharedPtr msg) {
+  if (non_ros_thread_names_.find(msg->thread_name) !=
+      non_ros_thread_names_.end()) {
+    RCLCPP_ERROR(this->get_logger(),
+                 "Duplicate thread_name received: tid=%ld | %s", msg->thread_id,
+                 msg->thread_name.c_str());
+    return;
+  }
+
+  RCLCPP_INFO(this->get_logger(), "Received NonRosThreadInfo: tid=%ld | %s",
+              msg->thread_id, msg->thread_name.c_str());
+
+  non_ros_thread_names_.insert(msg->thread_name);
 }
 
 void PrerunNode::dump_yaml_config(std::filesystem::path path) {
@@ -57,6 +81,22 @@ void PrerunNode::dump_yaml_config(std::filesystem::path path) {
   for (const std::string &callback_group_id : callback_group_ids_) {
     out << YAML::BeginMap;
     out << YAML::Key << "id" << YAML::Value << callback_group_id;
+    out << YAML::Key << "affinity" << YAML::Value << YAML::Null;
+    out << YAML::Key << "policy" << YAML::Value << "SCHED_OTHER";
+    out << YAML::Key << "priority" << YAML::Value << 0;
+    out << YAML::EndMap;
+    out << YAML::Newline;
+  }
+
+  out << YAML::EndSeq;
+
+  // Add non_ros_threads section
+  out << YAML::Key << "non_ros_threads";
+  out << YAML::Value << YAML::BeginSeq;
+
+  for (const std::string &thread_name : non_ros_thread_names_) {
+    out << YAML::BeginMap;
+    out << YAML::Key << "id" << YAML::Value << thread_name;
     out << YAML::Key << "affinity" << YAML::Value << YAML::Null;
     out << YAML::Key << "policy" << YAML::Value << "SCHED_OTHER";
     out << YAML::Key << "priority" << YAML::Value << 0;

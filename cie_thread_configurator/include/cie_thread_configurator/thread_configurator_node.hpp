@@ -7,10 +7,11 @@
 #include "yaml-cpp/yaml.h"
 
 #include "cie_config_msgs/msg/callback_group_info.hpp"
+#include "cie_config_msgs/msg/non_ros_thread_info.hpp"
 
 class ThreadConfiguratorNode : public rclcpp::Node {
-  struct CallbackGroupConfig {
-    std::string callback_group_id;
+  struct ThreadConfig {
+    std::string thread_str; // callback_group_id or thread_name
     int64_t thread_id = -1;
     std::vector<int> affinity;
     std::string policy;
@@ -35,18 +36,21 @@ public:
 
 private:
   bool set_affinity_by_cgroup(int64_t thread_id, const std::vector<int> &cpus);
-  bool issue_syscalls(const CallbackGroupConfig &config);
-  void
-  topic_callback(const cie_config_msgs::msg::CallbackGroupInfo::SharedPtr msg);
+  bool issue_syscalls(const ThreadConfig &config);
+  void callback_group_callback(
+      const cie_config_msgs::msg::CallbackGroupInfo::SharedPtr msg);
+  void non_ros_thread_callback(
+      const cie_config_msgs::msg::NonRosThreadInfo::SharedPtr msg);
 
   rclcpp::Subscription<cie_config_msgs::msg::CallbackGroupInfo>::SharedPtr
       subscription_;
+  rclcpp::Subscription<cie_config_msgs::msg::NonRosThreadInfo>::SharedPtr
+      non_ros_thread_subscription_;
 
-  std::vector<CallbackGroupConfig> callback_group_configs_;
-  std::unordered_map<std::string, CallbackGroupConfig *>
-      id_to_callback_group_config_;
+  std::vector<ThreadConfig> thread_configs_;
+  std::unordered_map<std::string, ThreadConfig *> id_to_thread_config_;
   int unapplied_num_;
   int cgroup_num_;
 
-  std::vector<CallbackGroupConfig *> deadline_configs_;
+  std::vector<ThreadConfig *> deadline_configs_;
 };
