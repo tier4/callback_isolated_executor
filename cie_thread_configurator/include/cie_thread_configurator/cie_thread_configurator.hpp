@@ -32,6 +32,7 @@ void publish_callback_group_info(
 std::map<std::string, std::string> get_hardware_info();
 
 /// Spawn a thread whose scheduling policy can be managed through
+/// cie_thread_configurator
 template <class F, class... Args>
 std::thread spawn_cie_thread(const char *thread_name, F &&f, Args &&...args) {
   std::thread t(
