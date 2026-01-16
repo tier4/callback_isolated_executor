@@ -116,7 +116,11 @@ void ComponentManagerCallbackIsolated::add_node_to_executor(uint64_t node_id) {
   node->for_each_callback_group([node_id, &node,
                                  this](rclcpp::CallbackGroup::SharedPtr
                                            callback_group) {
-    std::string group_id =
+    if (!callback_group->automatically_add_to_executor_with_node()) {
+      return;
+    }
+    
+                                            std::string group_id =
         cie_thread_configurator::create_callback_group_id(callback_group, node);
     std::atomic_bool &has_executor =
         callback_group->get_associated_with_executor_atomic();
