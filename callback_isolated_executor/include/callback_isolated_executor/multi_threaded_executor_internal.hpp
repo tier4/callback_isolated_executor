@@ -1,3 +1,5 @@
+#pragma once
+
 #include "rclcpp/rclcpp.hpp"
 
 // To implement parallelism for reentrant callback groups in
