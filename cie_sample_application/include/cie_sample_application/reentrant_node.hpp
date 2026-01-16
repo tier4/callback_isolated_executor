@@ -17,6 +17,4 @@ private:
 
   // Single reentrant group to allow parallel callbacks
   rclcpp::CallbackGroup::SharedPtr reentrant_group_;
-
-  std::atomic<int> count_{0};
 };
