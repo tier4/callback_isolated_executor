@@ -143,7 +143,7 @@ Note: Future updates may exclude `rclcpp::Waitable` from being included in the C
 
 ## Non-ROS Worker Thread Management
 
-The `spawn_cie_thread` function enables thread scheduling management for non-ROS2 worker threads. Threads created with this function automatically publish their information to the `cie_thread_configurator` without requiring a ROS node.
+The `spawn_non_ros2_thread` function enables thread scheduling management for non-ROS2 worker threads. Threads created with this function automatically publish their information to the `cie_thread_configurator` without requiring a ROS node.
 
 ### Usage
 
@@ -151,7 +151,7 @@ The `spawn_cie_thread` function enables thread scheduling management for non-ROS
 #include "cie_thread_configurator/cie_thread_configurator.hpp"
 
 // Spawn a managed worker thread
-auto thread = cie_thread_configurator::spawn_cie_thread(
+auto thread = cie_thread_configurator::spawn_non_ros2_thread(
     "worker_thread_name",  // Unique thread name (used as ID in YAML)
     worker_function,       // Thread function
     arg1, arg2, ...        // Optional arguments

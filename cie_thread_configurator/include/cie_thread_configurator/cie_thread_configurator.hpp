@@ -37,7 +37,8 @@ std::map<std::string, std::string> get_hardware_info();
 /// Caution: the `thread_name` must be unique among threads managed by
 /// cie_thread_configurator.
 template <class F, class... Args>
-std::thread spawn_cie_thread(const char *thread_name, F &&f, Args &&...args) {
+std::thread spawn_non_ros2_thread(const char *thread_name, F &&f,
+                                  Args &&...args) {
   std::thread t([thread_name, func = std::forward<F>(f),
                  captured_args =
                      std::make_tuple(std::forward<Args>(args)...)]() mutable {

@@ -33,7 +33,7 @@ SampleNode::SampleNode(const rclcpp::NodeOptions &options)
                 std::placeholders::_1),
       sub_options);
 
-  non_ros_thread_ = cie_thread_configurator::spawn_cie_thread(
+  non_ros_thread_ = cie_thread_configurator::spawn_non_ros2_thread(
       "sample_non_ros_thread", &SampleNode::non_ros_thread_func, this, 42);
 }
 

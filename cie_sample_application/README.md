@@ -23,4 +23,4 @@ $ ros2 launch cie_sample_application load_sample_node.launch.xml
 $ ros2 run cie_sample_application sample_non_ros_process
 ```
 
-This demonstrates using `spawn_cie_thread` in a standalone process without any ROS2 node.
+This demonstrates using `spawn_non_ros2_thread` in a standalone process without any ROS2 node.
