@@ -57,6 +57,6 @@ jobs:
       if: steps.check_diff_cpp.outputs.cpp_changed == 'true'
       run: |
         source /opt/ros/humble/setup.bash
-        colcon build --cmake-args -DCMAKE_EXPORT_COMPILE_COMMANDS=1
+        colcon build --parallel-workers 1 --merge-install --cmake-args -DCMAKE_EXPORT_COMPILE_COMMANDS=1
     
     # TODO: run tests
