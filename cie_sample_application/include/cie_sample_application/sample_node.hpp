@@ -7,11 +7,13 @@ class SampleNode : public rclcpp::Node {
 public:
   explicit SampleNode(
       const rclcpp::NodeOptions &options = rclcpp::NodeOptions());
+  ~SampleNode();
 
 private:
   void timer_callback();
   void timer_callback2();
   void subscription_callback(const std_msgs::msg::Int32::SharedPtr msg);
+  void non_ros_thread_func(int value);
 
   rclcpp::TimerBase::SharedPtr timer_;
   rclcpp::TimerBase::SharedPtr timer2_;
@@ -26,4 +28,6 @@ private:
 
   size_t count_;
   size_t count2_;
+
+  std::thread non_ros_thread_;
 };

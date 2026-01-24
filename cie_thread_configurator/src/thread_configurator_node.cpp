@@ -9,6 +9,7 @@
 #include <unistd.h>
 
 #include "cie_config_msgs/msg/callback_group_info.hpp"
+#include "cie_config_msgs/msg/non_ros_thread_info.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "yaml-cpp/yaml.h"
 
@@ -18,8 +19,13 @@
 ThreadConfiguratorNode::ThreadConfiguratorNode(const YAML::Node &yaml)
     : Node("thread_configurator_node"), unapplied_num_(0), cgroup_num_(0) {
   YAML::Node callback_groups = yaml["callback_groups"];
-  unapplied_num_ = callback_groups.size();
-  callback_group_configs_.resize(callback_groups.size());
+  YAML::Node non_ros_threads = yaml["non_ros_threads"];
+
+  size_t callback_groups_size = callback_groups ? callback_groups.size() : 0;
+  size_t non_ros_threads_size = non_ros_threads ? non_ros_threads.size() : 0;
+
+  unapplied_num_ = callback_groups_size + non_ros_threads_size;
+  thread_configs_.resize(callback_groups_size + non_ros_threads_size);
 
   // For backward compatibility: remove trailing "Waitable@"s
   auto remove_trailing_waitable = [](std::string s) {
@@ -37,25 +43,37 @@ ThreadConfiguratorNode::ThreadConfiguratorNode(const YAML::Node &yaml)
     return s;
   };
 
-  for (size_t i = 0; i < callback_groups.size(); i++) {
-    const auto &callback_group = callback_groups[i];
-    auto &config = callback_group_configs_[i];
-
-    config.callback_group_id =
-        remove_trailing_waitable(callback_group["id"].as<std::string>());
-    for (auto &cpu : callback_group["affinity"])
+  // Common lambda to load thread configuration from YAML
+  auto load_thread_config = [](ThreadConfig &config, const YAML::Node &node) {
+    config.thread_str = node["id"].as<std::string>();
+    for (auto &cpu : node["affinity"])
       config.affinity.push_back(cpu.as<int>());
-    config.policy = callback_group["policy"].as<std::string>();
+    config.policy = node["policy"].as<std::string>();
 
     if (config.policy == "SCHED_DEADLINE") {
-      config.runtime = callback_group["runtime"].as<unsigned int>();
-      config.period = callback_group["period"].as<unsigned int>();
-      config.deadline = callback_group["deadline"].as<unsigned int>();
+      config.runtime = node["runtime"].as<unsigned int>();
+      config.period = node["period"].as<unsigned int>();
+      config.deadline = node["deadline"].as<unsigned int>();
     } else {
-      config.priority = callback_group["priority"].as<int>();
+      config.priority = node["priority"].as<int>();
     }
+  };
 
-    id_to_callback_group_config_[config.callback_group_id] = &config;
+  size_t config_index = 0;
+
+  // Load callback_groups configuration
+  for (size_t i = 0; i < callback_groups_size; i++) {
+    auto &config = thread_configs_[config_index++];
+    load_thread_config(config, callback_groups[i]);
+    config.thread_str = remove_trailing_waitable(config.thread_str);
+    id_to_thread_config_[config.thread_str] = &config;
+  }
+
+  // Load non_ros_threads configuration
+  for (size_t i = 0; i < non_ros_threads_size; i++) {
+    auto &config = thread_configs_[config_index++];
+    load_thread_config(config, non_ros_threads[i]);
+    id_to_thread_config_[config.thread_str] = &config;
   }
 
   auto qos = rclcpp::QoS(rclcpp::QoSInitialization(
@@ -64,7 +82,13 @@ ThreadConfiguratorNode::ThreadConfiguratorNode(const YAML::Node &yaml)
   subscription_ =
       this->create_subscription<cie_config_msgs::msg::CallbackGroupInfo>(
           "/cie_thread_configurator/callback_group_info", qos,
-          std::bind(&ThreadConfiguratorNode::topic_callback, this,
+          std::bind(&ThreadConfiguratorNode::callback_group_callback, this,
+                    std::placeholders::_1));
+
+  non_ros_thread_subscription_ =
+      this->create_subscription<cie_config_msgs::msg::NonRosThreadInfo>(
+          "/cie_thread_configurator/non_ros_thread_info", qos,
+          std::bind(&ThreadConfiguratorNode::non_ros_thread_callback, this,
                     std::placeholders::_1));
 }
 
@@ -79,13 +103,11 @@ ThreadConfiguratorNode::~ThreadConfiguratorNode() {
 bool ThreadConfiguratorNode::all_applied() { return unapplied_num_ == 0; }
 
 void ThreadConfiguratorNode::print_all_unapplied() {
-  RCLCPP_WARN(this->get_logger(),
-              "Following callback groups are not yet configured");
+  RCLCPP_WARN(this->get_logger(), "Following threads are not yet configured");
 
-  for (auto &config : callback_group_configs_) {
+  for (auto &config : thread_configs_) {
     if (!config.applied) {
-      RCLCPP_WARN(this->get_logger(), "  - %s",
-                  config.callback_group_id.c_str());
+      RCLCPP_WARN(this->get_logger(), "  - %s", config.thread_str.c_str());
     }
   }
 }
@@ -122,7 +144,7 @@ bool ThreadConfiguratorNode::set_affinity_by_cgroup(
   return true;
 }
 
-bool ThreadConfiguratorNode::issue_syscalls(const CallbackGroupConfig &config) {
+bool ThreadConfiguratorNode::issue_syscalls(const ThreadConfig &config) {
   if (config.policy == "SCHED_OTHER" || config.policy == "SCHED_BATCH" ||
       config.policy == "SCHED_IDLE") {
     struct sched_param param;
@@ -137,7 +159,7 @@ bool ThreadConfiguratorNode::issue_syscalls(const CallbackGroupConfig &config) {
     if (sched_setscheduler(config.thread_id, m[config.policy], &param) == -1) {
       RCLCPP_ERROR(
           this->get_logger(), "Failed to configure policy (id=%s, tid=%ld): %s",
-          config.callback_group_id.c_str(), config.thread_id, strerror(errno));
+          config.thread_str.c_str(), config.thread_id, strerror(errno));
       return false;
     }
 
@@ -145,7 +167,7 @@ bool ThreadConfiguratorNode::issue_syscalls(const CallbackGroupConfig &config) {
     if (setpriority(PRIO_PROCESS, config.thread_id, config.priority) == -1) {
       RCLCPP_ERROR(this->get_logger(),
                    "Failed to configure nice value (id=%s, tid=%ld): %s",
-                   config.callback_group_id.c_str(), config.thread_id,
+                   config.thread_str.c_str(), config.thread_id,
                    strerror(errno));
       return false;
     }
@@ -162,7 +184,7 @@ bool ThreadConfiguratorNode::issue_syscalls(const CallbackGroupConfig &config) {
     if (sched_setscheduler(config.thread_id, m[config.policy], &param) == -1) {
       RCLCPP_ERROR(
           this->get_logger(), "Failed to configure policy (id=%s, tid=%ld): %s",
-          config.callback_group_id.c_str(), config.thread_id, strerror(errno));
+          config.thread_str.c_str(), config.thread_id, strerror(errno));
       return false;
     }
 
@@ -182,7 +204,7 @@ bool ThreadConfiguratorNode::issue_syscalls(const CallbackGroupConfig &config) {
     if (sched_setattr(config.thread_id, &attr, 0) == -1) {
       RCLCPP_ERROR(
           this->get_logger(), "Failed to configure policy (id=%s, tid=%ld): %s",
-          config.callback_group_id.c_str(), config.thread_id, strerror(errno));
+          config.thread_str.c_str(), config.thread_id, strerror(errno));
       return false;
     }
   }
@@ -192,7 +214,7 @@ bool ThreadConfiguratorNode::issue_syscalls(const CallbackGroupConfig &config) {
       if (!set_affinity_by_cgroup(config.thread_id, config.affinity)) {
         RCLCPP_ERROR(this->get_logger(),
                      "Failed to configure affinity (id=%s, tid=%ld): %s",
-                     config.callback_group_id.c_str(), config.thread_id,
+                     config.thread_str.c_str(), config.thread_id,
                      "Please disable cgroup v2 if used: "
                      "`systemd.unified_cgroup_hierarchy=0`");
         return false;
@@ -205,7 +227,7 @@ bool ThreadConfiguratorNode::issue_syscalls(const CallbackGroupConfig &config) {
       if (sched_setaffinity(config.thread_id, sizeof(set), &set) == -1) {
         RCLCPP_ERROR(this->get_logger(),
                      "Failed to configure affinity (id=%s, tid=%ld): %s",
-                     config.callback_group_id.c_str(), config.thread_id,
+                     config.thread_str.c_str(), config.thread_id,
                      strerror(errno));
         return false;
       }
@@ -215,10 +237,10 @@ bool ThreadConfiguratorNode::issue_syscalls(const CallbackGroupConfig &config) {
   return true;
 }
 
-void ThreadConfiguratorNode::topic_callback(
+void ThreadConfiguratorNode::callback_group_callback(
     const cie_config_msgs::msg::CallbackGroupInfo::SharedPtr msg) {
-  auto it = id_to_callback_group_config_.find(msg->callback_group_id);
-  if (it == id_to_callback_group_config_.end()) {
+  auto it = id_to_thread_config_.find(msg->callback_group_id);
+  if (it == id_to_thread_config_.end()) {
     RCLCPP_INFO(this->get_logger(),
                 "Received CallbackGroupInfo: but the yaml file does not "
                 "contain configuration for id=%s (tid=%ld)",
@@ -226,7 +248,7 @@ void ThreadConfiguratorNode::topic_callback(
     return;
   }
 
-  CallbackGroupConfig *config = it->second;
+  ThreadConfig *config = it->second;
   if (config->applied) {
     RCLCPP_INFO(
         this->get_logger(),
@@ -237,6 +259,42 @@ void ThreadConfiguratorNode::topic_callback(
 
   RCLCPP_INFO(this->get_logger(), "Received CallbackGroupInfo: tid=%ld | %s",
               msg->thread_id, msg->callback_group_id.c_str());
+  config->thread_id = msg->thread_id;
+
+  if (config->policy == "SCHED_DEADLINE") {
+    // delayed applying
+    deadline_configs_.push_back(config);
+  } else {
+    bool success = issue_syscalls(*config);
+    if (!success)
+      return;
+  }
+
+  config->applied = true;
+  unapplied_num_--;
+}
+
+void ThreadConfiguratorNode::non_ros_thread_callback(
+    const cie_config_msgs::msg::NonRosThreadInfo::SharedPtr msg) {
+  auto it = id_to_thread_config_.find(msg->thread_name);
+  if (it == id_to_thread_config_.end()) {
+    RCLCPP_INFO(this->get_logger(),
+                "Received NonRosThreadInfo: but the yaml file does not "
+                "contain configuration for name=%s (tid=%ld)",
+                msg->thread_name.c_str(), msg->thread_id);
+    return;
+  }
+
+  ThreadConfig *config = it->second;
+  if (config->applied) {
+    RCLCPP_INFO(this->get_logger(),
+                "This thread is already configured. skip (name=%s, tid=%ld)",
+                msg->thread_name.c_str(), msg->thread_id);
+    return;
+  }
+
+  RCLCPP_INFO(this->get_logger(), "Received NonRosThreadInfo: tid=%ld | %s",
+              msg->thread_id, msg->thread_name.c_str());
   config->thread_id = msg->thread_id;
 
   if (config->policy == "SCHED_DEADLINE") {

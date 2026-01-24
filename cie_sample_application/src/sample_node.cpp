@@ -3,6 +3,7 @@
 #include <sys/syscall.h>
 
 #include "cie_sample_application/sample_node.hpp"
+#include "cie_thread_configurator/cie_thread_configurator.hpp"
 #include "rclcpp_components/register_node_macro.hpp"
 
 using namespace std::chrono_literals;
@@ -31,6 +32,15 @@ SampleNode::SampleNode(const rclcpp::NodeOptions &options)
       std::bind(&SampleNode::subscription_callback, this,
                 std::placeholders::_1),
       sub_options);
+
+  non_ros_thread_ = cie_thread_configurator::spawn_non_ros2_thread(
+      "sample_non_ros_thread", &SampleNode::non_ros_thread_func, this, 42);
+}
+
+SampleNode::~SampleNode() {
+  if (non_ros_thread_.joinable()) {
+    non_ros_thread_.join();
+  }
 }
 
 void SampleNode::timer_callback() {
@@ -59,6 +69,15 @@ void SampleNode::subscription_callback(
   RCLCPP_INFO(this->get_logger(),
               "I heard message ID (subscription_callback tid=%ld): '%d'", tid,
               msg->data);
+}
+
+void SampleNode::non_ros_thread_func(int value) {
+  long tid = syscall(SYS_gettid);
+  for (int i = 0; i < 5; ++i) {
+    std::this_thread::sleep_for(2s);
+    RCLCPP_INFO(this->get_logger(), "Test thread running (tid=%ld), value: %d",
+                tid, value);
+  }
 }
 
 RCLCPP_COMPONENTS_REGISTER_NODE(SampleNode)
