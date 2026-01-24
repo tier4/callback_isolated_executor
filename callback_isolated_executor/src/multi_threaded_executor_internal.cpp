@@ -25,7 +25,7 @@ void MultiThreadedExecutorInternal::run() {
   bool will_notify = false;
 
   {
-    std::lock_guard<std::mutex> lock{wait_mutex_};
+    std::lock_guard<std::mutex> lock{mtx_};
     tids_.push_back(tid);
     ready_count_++;
     if (ready_count_ == number_of_threads_) {
