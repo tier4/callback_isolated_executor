@@ -274,6 +274,8 @@ This will terminate the execution of the configurator node and simultaneously de
 
 ## Notes on Adoption
 
-When replacing `rclcpp::executors::SingleThreadedExecutor` with `CallbackIsolatedExecutor`, a dedicated thread is created for each CallbackGroup, enabling parallel execution. This may expose concurrency bugs that were previously hidden. Therefore, before adoption, you should carefully investigate whether there are any locations that require mutexes or synchronization.
+When replacing `rclcpp::executors::SingleThreadedExecutor` with `CallbackIsolatedExecutor`, a dedicated thread is created for each CallbackGroup, enabling parallel execution.
+This may expose concurrency bugs that were previously hidden. Therefore, before adoption, you should carefully investigate whether there are any locations that require mutexes or synchronization.
+Note that callbacks within the same `MutuallyExclusiveCallbackGroup` are still executed serially.
 
 When using real-time scheduling policies, such as `SCHED_FIFO` or `SCHED_DEADLINE`, you must carefully consider the potential for delaying kernel processing and other applications, and configure affinity, priority, and [throttling](https://man7.org/linux/man-pages/man7/sched.7.html) appropriately.
