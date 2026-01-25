@@ -7,6 +7,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_components/component_manager.hpp"
 
+#include "callback_isolated_executor/multi_threaded_executor_internal.hpp"
 #include "cie_thread_configurator/cie_thread_configurator.hpp"
 
 namespace rclcpp_components {
@@ -15,14 +16,13 @@ class ComponentManagerCallbackIsolated
     : public rclcpp_components::ComponentManager {
 
   struct ExecutorWrapper {
-    explicit ExecutorWrapper(
-        std::shared_ptr<rclcpp::executors::SingleThreadedExecutor> executor)
+    explicit ExecutorWrapper(std::shared_ptr<rclcpp::Executor> executor)
         : executor(executor), thread_initialized(false) {}
 
     ExecutorWrapper(const ExecutorWrapper &) = delete;
     ExecutorWrapper &operator=(const ExecutorWrapper &) = delete;
 
-    std::shared_ptr<rclcpp::executors::SingleThreadedExecutor> executor;
+    std::shared_ptr<rclcpp::Executor> executor;
     std::thread thread;
     std::atomic_bool thread_initialized;
   };
@@ -52,6 +52,7 @@ private:
   rclcpp::Publisher<cie_config_msgs::msg::CallbackGroupInfo>::SharedPtr
       client_publisher_;
   std::mutex client_publisher_mutex_;
+  size_t reentrant_parallelism_{4};
 };
 
 ComponentManagerCallbackIsolated::~ComponentManagerCallbackIsolated() {
@@ -134,27 +135,58 @@ void ComponentManagerCallbackIsolated::add_node_to_executor(uint64_t node_id) {
       return;
     }
 
-    auto executor =
-        std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
-    executor->add_callback_group(callback_group, node);
+    if (callback_group->type() == rclcpp::CallbackGroupType::Reentrant &&
+        reentrant_parallelism_ >= 2) {
+      // Reentrant callback group: use MultiThreadedExecutorInternal
+      auto reentrant_executor = std::make_shared<MultiThreadedExecutorInternal>(
+          reentrant_parallelism_);
+      reentrant_executor->add_callback_group(callback_group, node);
 
-    auto it = node_id_to_executor_wrappers_[node_id].begin();
-    it = node_id_to_executor_wrappers_[node_id].emplace(it, executor);
-    auto &executor_wrapper = *it;
+      auto it = node_id_to_executor_wrappers_[node_id].begin();
+      it = node_id_to_executor_wrappers_[node_id].emplace(it,
+                                                          reentrant_executor);
+      auto &executor_wrapper = *it;
 
-    executor_wrapper.thread =
-        std::thread([&executor_wrapper, group_id, this]() {
-          auto tid = syscall(SYS_gettid);
+      executor_wrapper.thread = std::thread(
+          [&executor_wrapper, reentrant_executor, group_id, this]() {
+            reentrant_executor->pre_spin();
+            auto tids = reentrant_executor->get_thread_ids();
 
-          {
-            std::lock_guard<std::mutex> lock(this->client_publisher_mutex_);
-            cie_thread_configurator::publish_callback_group_info(
-                this->client_publisher_, tid, group_id);
-          }
+            {
+              std::lock_guard<std::mutex> lock(this->client_publisher_mutex_);
+              for (auto tid : tids) {
+                cie_thread_configurator::publish_callback_group_info(
+                    this->client_publisher_, tid, group_id);
+              }
+            }
 
-          executor_wrapper.thread_initialized = true;
-          executor_wrapper.executor->spin();
-        });
+            executor_wrapper.thread_initialized = true;
+            executor_wrapper.executor->spin();
+          });
+    } else {
+      // Mutually exclusive callback group: use SingleThreadedExecutor
+      auto executor =
+          std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
+      executor->add_callback_group(callback_group, node);
+
+      auto it = node_id_to_executor_wrappers_[node_id].begin();
+      it = node_id_to_executor_wrappers_[node_id].emplace(it, executor);
+      auto &executor_wrapper = *it;
+
+      executor_wrapper.thread =
+          std::thread([&executor_wrapper, group_id, this]() {
+            auto tid = syscall(SYS_gettid);
+
+            {
+              std::lock_guard<std::mutex> lock(this->client_publisher_mutex_);
+              cie_thread_configurator::publish_callback_group_info(
+                  this->client_publisher_, tid, group_id);
+            }
+
+            executor_wrapper.thread_initialized = true;
+            executor_wrapper.executor->spin();
+          });
+    }
   });
 }
 
