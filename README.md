@@ -271,3 +271,9 @@ You need to apply the `SCHED_DEADLINE` policy only after the system has fully st
 While the target ROS 2 application is running, the configurator node's window should not be closed and must remain open.
 After the execution of the target ROS 2 application has ended, press the enter key in the window displaying `Press enter to exit and remove cgroups...`.
 This will terminate the execution of the configurator node and simultaneously delete the cgroup that was created for setting the affinity of tasks with the `SCHED_DEADLINE` policy.
+
+## Notes on Adoption
+
+When replacing `rclcpp::executors::SingleThreadedExecutor` with `CallbackIsolatedExecutor`, a dedicated thread is created for each CallbackGroup, enabling parallel execution. This may expose concurrency bugs that were previously hidden. Therefore, before adoption, you should carefully investigate whether there are any locations that require mutexes or synchronization.
+
+When using real-time scheduling policies, such as `SCHED_FIFO` or `SCHED_DEADLINE`, you must carefully consider the potential for delaying kernel processing and other applications, and configure affinity, priority, and [throttling](https://man7.org/linux/man-pages/man7/sched.7.html) appropriately.
