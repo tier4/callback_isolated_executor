@@ -1,8 +1,15 @@
 #pragma once
+
+#include "cie_config_msgs/msg/callback_group_info.hpp"
 #include "rclcpp/rclcpp.hpp"
 
 class CallbackIsolatedExecutor : public rclcpp::Executor {
   RCLCPP_DISABLE_COPY(CallbackIsolatedExecutor)
+
+  std::mutex client_publisher_mutex_;
+  rclcpp::Publisher<cie_config_msgs::msg::CallbackGroupInfo>::SharedPtr
+      client_publisher_;
+  size_t reentrant_parallelism_{4};
 
   // Nodes associated with this CallbackIsolatedExecutor, appended by add_node()
   // and removed by remove_node()
@@ -25,6 +32,14 @@ class CallbackIsolatedExecutor : public rclcpp::Executor {
   std::vector<rclcpp::CallbackGroup::WeakPtr>
   get_automatically_added_callback_groups_from_nodes_internal() const
       RCPPUTILS_TSA_REQUIRES(mutex_);
+
+  void spin_mutually_exclusive_callback_group(
+      rclcpp::CallbackGroup::SharedPtr group,
+      rclcpp::node_interfaces::NodeBaseInterface::SharedPtr node);
+
+  void spin_reentrant_callback_group(
+      rclcpp::CallbackGroup::SharedPtr group,
+      rclcpp::node_interfaces::NodeBaseInterface::SharedPtr node);
 
 public:
   RCLCPP_PUBLIC
