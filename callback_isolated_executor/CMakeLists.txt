@@ -24,7 +24,13 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 
-add_executable(component_container_callback_isolated src/component_container_callback_isolated.cpp)
+add_executable(component_container_callback_isolated
+  src/component_container_callback_isolated.cpp
+  src/multi_threaded_executor_internal.cpp
+)
+target_include_directories(component_container_callback_isolated PRIVATE
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+)
 ament_target_dependencies(component_container_callback_isolated rclcpp rclcpp_components cie_thread_configurator)
 
 add_executable(component_container_single src/component_container_single.cpp)
