@@ -14,9 +14,9 @@ class CallbackIsolatedExecutor : public rclcpp::Executor {
 
   // Parameters for the MultiThreadedExecutorInternal used for reentrant
   // callback groups
-  size_t reentrant_parallelism_;
-  bool yield_before_execute_;
-  std::chrono::nanoseconds next_exec_timeout_;
+  size_t reentrant_parallelism_ = 4;
+  bool yield_before_execute_ = false;
+  std::chrono::nanoseconds next_exec_timeout_ = std::chrono::nanoseconds(-1);
 
   // Nodes associated with this CallbackIsolatedExecutor, appended by add_node()
   // and removed by remove_node()

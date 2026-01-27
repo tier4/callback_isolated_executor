@@ -37,8 +37,15 @@ public:
             rclcpp::QoS(1000).keep_all());
 
     // Declare and get parameters for MultiThreadedExecutorInternal
-    reentrant_parallelism_ =
-        static_cast<size_t>(declare_parameter("reentrant_parallelism", 4));
+    auto reentrant_parallelism_param =
+        declare_parameter("reentrant_parallelism", 4);
+    if (reentrant_parallelism_param < 0) {
+      RCLCPP_WARN(get_logger(),
+                  "reentrant_parallelism must be non-negative, using default "
+                  "value 4");
+      reentrant_parallelism_param = 4;
+    }
+    reentrant_parallelism_ = static_cast<size_t>(reentrant_parallelism_param);
     yield_before_execute_ = declare_parameter("yield_before_execute", false);
     auto timeout_ns = declare_parameter("next_exec_timeout_ns", -1L);
     next_exec_timeout_ = std::chrono::nanoseconds(timeout_ns);
