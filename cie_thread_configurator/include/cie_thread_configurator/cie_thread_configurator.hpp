@@ -58,7 +58,7 @@ std::thread spawn_non_ros2_thread(const char *thread_name, F &&f,
     auto publisher =
         node->create_publisher<cie_config_msgs::msg::NonRosThreadInfo>(
             "/cie_thread_configurator/non_ros_thread_info",
-            rclcpp::QoS(1000).keep_all());
+            rclcpp::QoS(1000).reliable());
     auto tid = static_cast<pid_t>(syscall(SYS_gettid));
 
     // Wait for subscriber to connect before publishing (timeout: 1 second)
@@ -75,6 +75,15 @@ std::thread spawn_non_ros2_thread(const char *thread_name, F &&f,
       message->thread_id = tid;
       message->thread_name = thread_name;
       publisher->publish(*message);
+      const bool all_acked =
+          publisher->wait_for_all_acked(std::chrono::milliseconds(500));
+      if (!all_acked) {
+        RCLCPP_WARN(
+            node->get_logger(),
+            "Timed out waiting for NonRosThreadInfo acknowledgment (thread "
+            "'%s').",
+            thread_name);
+      }
     } else {
       RCLCPP_WARN(node->get_logger(),
                   "No subscriber for NonRosThreadInfo (thread '%s'). "
