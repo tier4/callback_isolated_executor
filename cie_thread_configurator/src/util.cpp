@@ -83,7 +83,6 @@ void publish_callback_group_info(
   message->callback_group_id = callback_group_id;
 
   publisher->publish(*message);
-  rclcpp::sleep_for(std::chrono::milliseconds(500));
 }
 
 std::map<std::string, std::string> get_hardware_info() {
