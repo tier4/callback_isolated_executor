@@ -21,6 +21,8 @@ If you find `CallbackIsolatedExecutor` is useful in your research, please consid
 ```
 </details>
 
+For a comparison of real-time performance with other ROS 2 executors, see [Comparison of Real-Time Performance with Other ROS 2 Executors](docs/comparison_with_other_executors.md).
+
 ## Supported Environments
 
 CallbackIsolatedExecutor is currently available in the following environments.
