@@ -33,19 +33,19 @@ If the Executor has been merged into the ROS 2 mainline, or can be introduced wi
 
 | Executor                                       | Immediate Enqueue | Per-Callback Priority | Non-Nested Scheduling | Fully Preemptive | Support for Reentrant Callbacks | ROS 2 Mainline |
 | ---------------------------------------------- | :---------------: | :-------------------: | :-------------------: | :--------------: | :-----------------------------: | :------------: |
-| SingleThreadedExecutor / MultiThreadedExecutor |                   |                       |                       |                  |                            | ✔              |
-| EventExecutor                                  | ✔                 |                       |                       |                  | ✔                          | ✔              |
-| PiCAS Single [1]                               |                   | ✔                     |                       |                  |                            |                |
-| PiCAS Multi [2]                                | ✔*1               | ✔                     |                       |                  |                            |                |
-| Dynamic-Priority-based Executor [3,4]          | ✔*1               | ✔                     |                       |                  |                            |                |
-| Extended EventExecutor [5]                     | ✔                 | ✔                     |                       |                  | ✔                          |                |
-| RTeX [6]                                       | ✔                 | ✔                     |                       |                  | ✔                          |                |
-| Budget-based Real-Time Executor [7]            | ✔*1               | ✔                     | ✔                     | ✔                |                            |                |
-| Preemptive EDF Executor [8]                    | ✔*1               | ✔                     | ✔                     | ✔                |                            |                |
-| Ros-RT [9]                                     | ✔                 | ✔                     | ✔                     | ✔                | ✔                          |                |
-| CallbackIsolatedExecutor [10]                  | ✔*1               | ✔                     | ✔                     | ✔                | ✔                          | ✔              |
+| SingleThreadedExecutor / MultiThreadedExecutor |                   |                       |                       |                  |                                | ✔              |
+| EventExecutor                                  | ✔                 |                       |                       |                  | ✔                              | ✔              |
+| PiCAS Single [1]                               |                   | ✔                     |                       |                  |                                |                |
+| PiCAS Multi [2]                                | ✔\*1              | ✔                     |                       |                  |                                |                |
+| Dynamic-Priority-based Executor [3,4]          | ✔\*1              | ✔                     |                       |                  |                                |                |
+| Extended EventExecutor [5]                     | ✔                 | ✔                     |                       |                  | ✔                              |                |
+| RTeX [6]                                       | ✔                 | ✔                     |                       |                  | ✔                              |                |
+| Budget-based Real-Time Executor [7]            | ✔\*1              | ✔                     | ✔                     | ✔                |                                |                |
+| Preemptive EDF Executor [8]                    | ✔\*1              | ✔                     | ✔                     | ✔                |                                |                |
+| Ros-RT [9]                                     | ✔                 | ✔                     | ✔                     | ✔                | ✔                              |                |
+| CallbackIsolatedExecutor [10]                  | ✔\*1              | ✔                     | ✔                     | ✔                | ✔                              | ✔              |
 
-***1**: The ready queue is updated each time a thread selects a callback to execute.
+**\*1**: The ready queue is updated each time a thread selects a callback to execute.
 
 ---
 
