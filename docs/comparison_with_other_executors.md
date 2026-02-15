@@ -45,7 +45,7 @@ If the Executor has been merged into the ROS 2 mainline, or can be introduced wi
 | Ros-RT [9]                                     | ✔                 | ✔                     | ✔                     | ✔                | ✔                              |                |
 | CallbackIsolatedExecutor [10]                  | ✔\*1              | ✔                     | ✔                     | ✔                | ✔                              | ✔              |
 
-**\*1**: The ready queue is updated each time a thread selects a callback to execute.
+\*1: The ready queue is updated each time a thread selects a callback to execute.
 
 ---
 
