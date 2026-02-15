@@ -49,7 +49,7 @@ If the Executor has been merged into the ROS 2 mainline, or can be introduced wi
 
 ---
 
-# References
+## References
 
 1. H. Choi, Y. Xiang and H. Kim,
    “PiCAS: New Design of Priority-Driven Chain-Aware Scheduling for ROS2,”
