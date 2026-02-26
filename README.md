@@ -21,6 +21,8 @@ If you find `CallbackIsolatedExecutor` is useful in your research, please consid
 ```
 </details>
 
+For a comparison of real-time performance with other ROS 2 executors, see [Comparison of Real-Time Performance with Other ROS 2 Executors](docs/comparison_with_other_executors.md).
+
 ## Supported Environments
 
 CallbackIsolatedExecutor is currently available in the following environments.
@@ -33,7 +35,7 @@ This reflects the current status, and support is expected to expand in the futur
 
 ## Build and Install
 ```
-$ git clone https://github.com/tier4/callback_isolated_executor.git
+$ git clone https://github.com/autowarefoundation/callback_isolated_executor.git
 $ cd callback_isolated_executor
 $ source /opt/ros/humble/setup.bash
 $ colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
@@ -88,7 +90,7 @@ $ sudo reboot
 ### Step1: Rewrite your app
 When running a node within `ComponentContainerCallbackIsolated`, you don't need to modify the node's implementation.
 However, if starting the node directly from the main function without using ComponentContainer, you need to modify the node's implementation as shown below and rebuild it.
-Refer to the source code in the [cie_sample_application](https://github.com/tier4/callback_isolated_executor/tree/main/cie_sample_application) package to understand how to modify your app.
+Refer to the source code in the [cie_sample_application](https://github.com/autowarefoundation/callback_isolated_executor/tree/main/cie_sample_application) package to understand how to modify your app.
 
 #### Option1: Launch without ComponentContainer
 If you are launching a node directly from the main function without using a ComponentContainer, change the name of the Executor.
@@ -212,7 +214,7 @@ $ vim your_config.yaml
 ```
 
 For callback groups that do not require configuration, you can either delete the entry entirely or leave it as is because the default values in `template.yaml` are set with default nice values and no affinity settings on the CFS scheduler.
-For the detailed specifications of the configuration file, please refer to https://github.com/tier4/callback_isolated_executor/tree/main/cie_thread_configurator#yaml-configuration-file-format.
+For the detailed specifications of the configuration file, please refer to https://github.com/autowarefoundation/callback_isolated_executor/tree/main/cie_thread_configurator#yaml-configuration-file-format.
 
 ### Step5: Launch your app with scheduler configuration
 To launch the target ROS 2 application with the scheduler settings applied from the your_config.yaml you created, first start the configurator node with the following command.
